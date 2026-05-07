@@ -164,10 +164,7 @@
 						<Icon
 							icon={link.icon}
 							class="w-5 h-5"
-							style={link.name === 'Telegram群' ? 'color: #0088cc' :
-							       link.name === 'Bilibili' ? 'color: #fb7299' :
-							       link.name === 'GitHub' ? 'color: #333333' :
-							       link.name === 'Folo' ? 'color: #ff6b35' : ''}
+							style={link.color ? `color: ${link.color}` : ''}
 						/>
 					{/if}
 					<span class="text-sm font-medium">{link.name}</span>

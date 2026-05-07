@@ -26,22 +26,26 @@ export const siteConfig = {
 			{
 				name: 'Telegram群',
 				icon: 'simple-icons:telegram',
-				url: 'https://t.me/+_07DERp7k1ljYTc1'
+				url: 'https://t.me/+_07DERp7k1ljYTc1',
+				color: '#0088cc'
 			},
 			{
 				name: 'Bilibili',
 				icon: 'simple-icons:bilibili',
-				url: 'https://space.bilibili.com/325903362'
+				url: 'https://space.bilibili.com/325903362',
+				color: '#fb7299'
 			},
 			{
 				name: 'GitHub',
 				icon: 'simple-icons:github',
-				url: 'https://github.com/afoim'
+				url: 'https://github.com/afoim',
+				color: '#333333'
 			},
 			{
 				name: 'Folo',
 				icon: 'simple-icons:folo',
-				url: 'https://app.folo.is/share/feeds/245004133358075904'
+				url: 'https://app.folo.is/share/feeds/245004133358075904',
+				color: '#ff6b35'
 			}
 		]
 	},
