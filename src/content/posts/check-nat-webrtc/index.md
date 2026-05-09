@@ -48,4 +48,4 @@ https://www.bilibili.com/video/BV1H4DuBWEes/
 
 [afoim/webrtc_check_nat](https://github.com/afoim/webrtc_check_nat)
 
-[https://2x.nz/nat-check/](https://2x.nz/nat-check/)
+https://2x.nz/nat/
