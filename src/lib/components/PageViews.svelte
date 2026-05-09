@@ -8,15 +8,19 @@
 		pathname,
 		cacheKey,
 		class: className = '',
+		prefix = '',
 		onloaded
 	}: {
 		pathname: string;
 		cacheKey?: string;
 		class?: string;
+		prefix?: string;
 		onloaded?: () => void;
 	} = $props();
 
-	let pageViews = $state<number | null>(null);
+	// 同步读取缓存，避免 null→值 的转换触发动画
+	const _key = cacheKey ?? `pageviews-${pathname}`;
+	let pageViews = $state<number | null>(spaCache.peek(_key) ?? null);
 
 	async function loadPageViews() {
 		const key = cacheKey ?? `pageviews-${pathname}`;
@@ -41,13 +45,10 @@
 	$effect(() => {
 		void pathname;
 		void cacheKey;
-		pageViews = null;
-		loadPageViews();
+		if (pageViews === null) loadPageViews();
 	});
 </script>
 
 {#if pageViews !== null}
-	<span class={className} transition:fly={{ y: 8, duration: 350, easing: quintOut }}>
-		{pageViews.toLocaleString()} 次浏览
-	</span>
+	<span class={className} transition:fly={{ y: 8, duration: 350, easing: quintOut }}>{prefix}{pageViews.toLocaleString()} 次浏览</span>
 {/if}
