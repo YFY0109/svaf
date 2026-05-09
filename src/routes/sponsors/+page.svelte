@@ -69,17 +69,19 @@
 				{#each sponsors as sponsor}
 					<Card>
 						<CardContent class="flex items-center gap-4">
-							{#if sponsor.avatar}
-								<img
-									src={sponsor.avatar}
-									alt={sponsor.name}
-									class="h-12 w-12 rounded-full"
-								/>
-							{:else}
-								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-lg font-bold text-muted-foreground">
+							<div class="relative h-12 w-12 shrink-0">
+								{#if sponsor.avatar}
+									<img
+										src={sponsor.avatar}
+										alt={sponsor.name}
+										class="h-12 w-12 rounded-full"
+										onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.removeAttribute('hidden'); }}
+									/>
+								{/if}
+								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-lg font-bold text-muted-foreground" hidden={!!sponsor.avatar}>
 									{sponsor.name.charAt(0)}
 								</div>
-							{/if}
+							</div>
 							<div class="flex-1">
 								<div class="font-semibold">{sponsor.name}</div>
 								<div class="text-sm text-muted-foreground">{sponsor.date}</div>
