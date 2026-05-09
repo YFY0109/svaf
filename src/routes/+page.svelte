@@ -6,6 +6,7 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	import { spaCache } from '$lib/utils/spaCache';
+	import { fadeInUp, staggerChildren, fadeIn } from '$lib/utils/motion';
 	import PageViews from '$lib/components/PageViews.svelte';
 	import TimetableCard from '$lib/components/TimetableCard.svelte';
 	import SponsorBanners from '$lib/components/SponsorBanners.svelte';
@@ -118,7 +119,7 @@
 	</div>
 	<Announcement />
 
-	<div class="live-avatar-container">
+	<div class="live-avatar-container" use:fadeInUp>
 		{#if isLive}
 			<div class="live-ring"></div>
 			<div class="live-ring"></div>
@@ -139,7 +140,7 @@
 		{/if}
 	</div>
 	
-	<div class="text-center">
+	<div class="text-center" use:fadeInUp={{ delay: 0.1 }}>
 		<h1 class="text-4xl font-bold mb-2">{siteConfig.bio.name}</h1>
 		<p class="text-lg text-muted-foreground mb-4">{siteConfig.bio.bio}</p>
 		<p class="text-sm text-muted-foreground">
@@ -148,12 +149,12 @@
 	</div>
 
 	<!-- 课程表卡片 -->
-	<div class="w-full max-w-xs">
+	<div class="w-full max-w-xs" use:fadeIn={{ delay: 0.2 }}>
 		<TimetableCard />
 	</div>
 
 	<!-- 社交媒体链接 -->
-	<div class="flex flex-wrap gap-3 justify-center">
+	<div class="flex flex-wrap gap-3 justify-center" use:staggerChildren>
 		{#each siteConfig.bio.links as link}
 			{@const isLocalImage = link.icon.startsWith('/')}
 			<a href={link.url} target="_blank" rel="noopener noreferrer">
@@ -175,7 +176,7 @@
 	
 	<Separator class="max-w-xs" />
 
-	<div class="flex flex-wrap gap-3 justify-center">
+	<div class="flex flex-wrap gap-3 justify-center" use:staggerChildren>
 		{#each siteConfig.navLinks as link}
 			{@const isExternal = link.href.startsWith('http')}
 			<a href={link.href} {...isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}}>
