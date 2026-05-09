@@ -186,7 +186,9 @@
 		{/each}
 	</div>
 	
-	<Separator class="max-w-xs" />
+	<div class="mo-fade-in" use:fadeIn>
+		<Separator class="max-w-xs" />
+	</div>
 
 	<div class="flex flex-wrap gap-3 justify-center mo-stagger" use:staggerChildren>
 		{#each siteConfig.navLinks as link}
@@ -222,7 +224,9 @@
 		</a>
 	</div>
 
-	<Separator class="max-w-xs" />
+	<div class="mo-fade-in" use:fadeIn>
+		<Separator class="max-w-xs" />
+	</div>
 
 	<SponsorBanners />
 </div>
