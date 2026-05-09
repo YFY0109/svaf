@@ -169,6 +169,21 @@
 	.markdown-alert-caution { --alert-color: var(--destructive); }
 }
 
+/* Motion One 初始隐藏状态（paint 前生效，避免闪烁） */
+.mo-fade-in-up,
+.mo-fade-in,
+.mo-slide-left,
+.mo-slide-right,
+.mo-pop-in,
+.mo-stagger > * {
+	opacity: 0;
+}
+.mo-fade-in-up { transform: translateY(20px); }
+.mo-slide-left { transform: translateX(-30px); }
+.mo-slide-right { transform: translateX(30px); }
+.mo-pop-in { transform: scale(0.8); }
+.mo-stagger > * { transform: translateY(15px); }
+
 /* 页面切换淡入淡出 */
 ::view-transition-old(root) {
 	animation: fade-out 0.2s ease-in forwards;
