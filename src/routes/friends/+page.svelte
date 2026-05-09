@@ -90,7 +90,7 @@
 				{#each paginatedFriends as friend (friend.url)}
 					<a href={friend.url} target="_blank" rel="noopener noreferrer">
 						<Card class="h-full transition-all hover:shadow-lg">
-							<CardContent class="flex items-start gap-4 p-6">
+							<CardContent class="flex items-start gap-4 px-5 py-3">
 								{#if friend.avatar}
 									<img
 										src={friend.avatar}

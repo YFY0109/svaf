@@ -68,7 +68,7 @@
 			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{#each sponsors as sponsor}
 					<Card>
-						<CardContent class="flex items-center gap-4 p-6">
+						<CardContent class="flex items-center gap-4 px-5 py-3">
 							{#if sponsor.avatar}
 								<img
 									src={sponsor.avatar}
