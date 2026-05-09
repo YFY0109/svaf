@@ -42,7 +42,7 @@
 			class={`w-full max-w-2xl border-0 ring-0 ${isHappy ? 'announcement-happy' : ''}`}
 			style={isHappy ? '' : `border-color: ${currentColor};`}
 		>
-			<CardContent class="flex items-center justify-center gap-3">
+			<CardContent class="flex items-center justify-center gap-3 text-center">
 				<div
 					class="flex shrink-0 items-center justify-center"
 					style={isHappy ? '' : `color: ${currentColor};`}
