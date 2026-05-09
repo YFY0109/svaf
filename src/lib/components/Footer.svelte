@@ -3,7 +3,7 @@
 	import Icon from '@iconify/svelte';
 </script>
 
-<footer class="mt-auto border-t py-6">
+<footer class="mt-8 border-t pt-6 pb-8">
 	<div class="container mx-auto flex flex-col items-center gap-2 text-sm text-muted-foreground">
 		<div class="flex items-center gap-4">
 			<a href="/posts/privacy-policy/" class="inline-flex items-center gap-1 hover:text-foreground transition-colors">
