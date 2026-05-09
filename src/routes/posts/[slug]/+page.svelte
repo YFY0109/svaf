@@ -10,6 +10,7 @@
 	import PostToc from '$lib/components/PostToc.svelte';
 	import { highlightCodeBlocksIn } from '$lib/utils/highlight';
 	import { renderMermaidIn } from '$lib/utils/mermaid';
+	import { fadeInUp, fadeIn } from '$lib/utils/motion';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -155,7 +156,7 @@
 	</div>
 
 	<!-- 文章头部 -->
-	<header class="mb-8">
+	<header class="mb-8 mo-fade-in-up" use:fadeInUp>
 		<div class="mb-4 flex items-center gap-2">
 			{#if data.post.metadata.pinned}
 				<Badge>置顶</Badge>
@@ -191,7 +192,8 @@
 	<!-- 文章内容 - 使用 mdsvex 组件 -->
 	<div
 		bind:this={proseEl}
-		class="prose prose-neutral dark:prose-invert max-w-none break-words [overflow-wrap:anywhere]
+		class="prose prose-neutral dark:prose-invert max-w-none break-words [overflow-wrap:anywhere] mo-fade-in"
+		use:fadeIn={{ delay: 0.15 }}
 			prose-headings:text-foreground
 			prose-p:text-foreground
 			prose-strong:text-foreground
