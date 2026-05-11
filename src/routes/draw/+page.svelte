@@ -41,6 +41,7 @@
 	let width = $state(0);
 	let height = $state(0);
 	let inlineWorkflow = $state<object | null>(null);
+	let safetyRating = $state('general');
 
 	// Progress state
 	let progressMessages = $state<WsRunMessage[]>([]);
@@ -179,11 +180,16 @@
 		progressMessages = [];
 		resultImages = [];
 
+		const ratingTag = `rating:${safetyRating}`;
+		const finalDirectPrompt = directPrompt
+			? `${directPrompt}, ${ratingTag}`
+			: ratingTag;
+
 		const payload: WsRunPayload = {
 			token: authToken,
 			workflow_path: workflowPath,
 			inline_workflow: inlineWorkflow || undefined,
-			direct_prompt: directPrompt,
+			direct_prompt: finalDirectPrompt,
 			nl_prompt: nlPrompt || undefined,
 			rewrite,
 			width: width || undefined,
@@ -340,6 +346,7 @@
 				bind:rewrite
 				bind:width
 				bind:height
+				bind:safetyRating
 				onsubmit={startGeneration}
 				disabled={isGenerating || globalBusy || !isLoggedIn}
 			/>

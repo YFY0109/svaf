@@ -7,6 +7,13 @@
 	import { fetchResolutions } from '$lib/draw/api/client';
 	import type { DrawResolution } from '$lib/draw/types';
 
+	const SAFETY_RATINGS = [
+		{ value: 'general', label: '普通' },
+		{ value: 'sensitive', label: '敏感' },
+		{ value: 'nsfw', label: 'NSFW' },
+		{ value: 'explicit', label: '露骨' }
+	] as const;
+
 	let {
 		directPrompt = $bindable(''),
 		negativePrompt = $bindable(''),
@@ -14,6 +21,7 @@
 		rewrite = $bindable(true),
 		width = $bindable(0),
 		height = $bindable(0),
+		safetyRating = $bindable('general'),
 		onsubmit,
 		disabled = false
 	}: {
@@ -23,6 +31,7 @@
 		rewrite?: boolean;
 		width?: number;
 		height?: number;
+		safetyRating?: string;
 		onsubmit?: () => void;
 		disabled?: boolean;
 	} = $props();
@@ -136,6 +145,23 @@
 				<Icon icon="mdi:help-circle-outline" class="size-3.5" />
 			</button>
 		</label>
+	</div>
+
+	<!-- Safety rating -->
+	<div class="space-y-1.5">
+		<Label class="text-xs font-medium">分级</Label>
+		<div class="flex flex-wrap gap-1.5">
+			{#each SAFETY_RATINGS as r}
+				<button
+					type="button"
+					class="px-2 py-1 rounded text-xs border transition-all {safetyRating === r.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-accent'}"
+					onclick={() => (safetyRating = r.value)}
+					{disabled}
+				>
+					{r.label}
+				</button>
+			{/each}
+		</div>
 	</div>
 
 	<!-- Resolution presets -->
