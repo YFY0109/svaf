@@ -394,6 +394,9 @@
 				onsubmit={startGeneration}
 				disabled={isGenerating || globalBusy || !isLoggedIn}
 				busy={globalBusy && !isGenerating}
+				bind:otherNode
+				bind:otherValue
+				bind:otherMax
 			/>
 
 			<ProgressPanel
