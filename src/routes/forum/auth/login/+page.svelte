@@ -24,6 +24,16 @@
 	let turnstileEnabled = $state(false);
 	let turnstileSiteKey = $state('');
 	let turnstileToken = $state('');
+	let redirectUrl = $state('/forum/');
+
+	onMount(() => {
+		if (typeof window !== 'undefined') {
+			const p = new URLSearchParams(window.location.search);
+			redirectUrl = p.get('redirect') || '/forum/';
+		}
+		loadConfig();
+		void consumeGithubCallback();
+	});
 
 	async function loadConfig() {
 		try {
@@ -58,7 +68,7 @@
 				return;
 			}
 			emitSuccessToast('登录', '登录成功，正在跳转...', true);
-			window.location.href = '/forum/';
+			window.location.href = redirectUrl;
 		} catch (error) {
 			status = '';
 			if (error instanceof ForumApiError && error.message === 'TOTP_REQUIRED') {
@@ -78,8 +88,8 @@
 		if (githubLoading) return;
 		githubLoading = true;
 		try {
-			const redirect = `${window.location.origin}/forum/auth/login/`;
-			const { authorize_url } = await startGithubOAuth('login', redirect);
+			const cb = `${window.location.origin}/forum/auth/login/${redirectUrl !== '/forum/' ? '?redirect=' + encodeURIComponent(redirectUrl) : ''}`;
+			const { authorize_url } = await startGithubOAuth('login', cb);
 			window.location.assign(authorize_url);
 		} catch (error) {
 			githubLoading = false;
@@ -123,7 +133,7 @@
 			const me = await getCurrentUser();
 			forumAuth.setSession({ user: me, token, requiresTotp: false });
 			emitSuccessToast('GitHub 登录', isNew ? '注册并登录成功，正在跳转...' : '登录成功，正在跳转...', true);
-			window.location.href = '/forum/';
+			window.location.href = redirectUrl;
 		} catch (error) {
 			forumAuth.clear();
 			emitErrorToast(
@@ -133,10 +143,6 @@
 		}
 	}
 
-	onMount(() => {
-		loadConfig();
-		void consumeGithubCallback();
-	});
 </script>
 
 <svelte:head>

@@ -350,7 +350,7 @@
 		<Alert>
 			<Icon icon="mdi:account-alert-outline" class="size-4" />
 			<AlertDescription class="text-xs">
-				请先<a href="/forum/auth/login" class="underline font-medium">登录论坛</a>后使用生图功能。
+				请先<a href="/forum/auth/login?redirect=/draw/" class="underline font-medium">登录论坛</a>后使用生图功能。
 			</AlertDescription>
 		</Alert>
 	{/if}
@@ -412,7 +412,7 @@
 					<Alert>
 						<Icon icon="mdi:account-alert-outline" class="size-4" />
 						<AlertDescription class="text-xs">
-							请先<a href="/forum/auth/login" class="underline font-medium">登录论坛</a>查看自己的图片。
+							请先<a href="/forum/auth/login?redirect=/draw/" class="underline font-medium">登录论坛</a>查看自己的图片。
 						</AlertDescription>
 					</Alert>
 				{:else}
@@ -527,7 +527,7 @@
 					<Alert>
 						<Icon icon="mdi:account-alert-outline" class="size-4" />
 						<AlertDescription class="text-xs">
-							请先<a href="/forum/auth/login" class="underline font-medium">登录论坛</a>查看精选图片。
+							请先<a href="/forum/auth/login?redirect=/draw/" class="underline font-medium">登录论坛</a>查看精选图片。
 						</AlertDescription>
 					</Alert>
 				{:else}
