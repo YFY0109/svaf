@@ -370,6 +370,7 @@
 				bind:safetyRating
 				onsubmit={startGeneration}
 				disabled={isGenerating || globalBusy || !isLoggedIn}
+				busy={globalBusy && !isGenerating}
 			/>
 
 			<ProgressPanel

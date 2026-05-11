@@ -191,6 +191,6 @@
 		{disabled}
 	>
 		<Icon icon="mdi:sparkles" class="size-5 mr-1.5" />
-		开始生成
+		{busy ? "他人生成中" : "开始生成"}
 	</Button>
 </div>
