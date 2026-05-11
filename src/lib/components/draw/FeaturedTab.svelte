@@ -59,8 +59,8 @@
 	</div>
 
 	{#if tip}
-		<Alert>
-			<Icon icon="mdi:lightbulb-outline" class="size-4" />
+		<Alert class="flex items-center gap-2">
+			<Icon icon="mdi:lightbulb-outline" class="size-4 shrink-0" />
 			<AlertDescription class="text-xs">{tip}</AlertDescription>
 		</Alert>
 	{/if}
