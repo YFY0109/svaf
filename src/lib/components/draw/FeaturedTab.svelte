@@ -39,9 +39,9 @@
 	function initLightbox() {
 		lightbox?.destroy();
 		if (!galleryEl) return;
-		const creatorMap = new Map<string, string>();
+		const creatorByPath = new Map<string, string>();
 		for (const it of items) {
-			if (it.creator_id) creatorMap.set(getImageUrl(it.path), it.creator_id);
+			if (it.creator_id) creatorByPath.set(it.path, it.creator_id);
 		}
 		lightbox = new PhotoSwipeLightbox({
 			gallery: galleryEl,
@@ -55,12 +55,11 @@
 				src: a.href,
 				width: img?.naturalWidth || 1600,
 				height: img?.naturalHeight || 1200,
-				alt: img?.alt || '',
-				creator_id: creatorMap.get(a.href) || ''
+				alt: img?.alt || ''
 			};
 		});
 		if (onFork) addForkButton(lightbox);
-		addCreatorElement(lightbox);
+		addCreatorElement(lightbox, creatorByPath);
 		lightbox.init();
 	}
 
@@ -83,7 +82,7 @@
 		});
 	}
 
-	function addCreatorElement(lb: PhotoSwipeLightbox) {
+	function addCreatorElement(lb: PhotoSwipeLightbox, creatorByPath: Map<string, string>) {
 		lb.on('uiRegister', () => {
 			lb.pswp.ui.registerElement({
 				name: 'creator-info',
@@ -105,9 +104,11 @@
 						whiteSpace: 'nowrap',
 						display: 'none'
 					});
-					lb.pswp.on('change', () => {
-						const data = lb.pswp.currSlide?.data as Record<string, unknown> | undefined;
-						const cid = (data?.creator_id as string) || '';
+					function update() {
+						const src = lb.pswp.currSlide?.data?.src;
+						if (!src) { el.style.display = 'none'; return; }
+						const p = new URL(src, location.origin).searchParams.get('path');
+						const cid = p ? (creatorByPath.get(p) || '') : '';
 						if (cid) {
 							const label = names[cid] || `UID:${cid}`;
 							el.textContent = `生图者: ${label}`;
@@ -116,7 +117,9 @@
 						} else {
 							el.style.display = 'none';
 						}
-					});
+					}
+					lb.pswp.on('change', update);
+					lb.pswp.on('openingAnimationEnd', update);
 				}
 			});
 		});
