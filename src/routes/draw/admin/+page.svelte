@@ -200,7 +200,7 @@
 	}
 
 	async function searchByUser() {
-		if (!searchUserId.trim()) return;
+		if (!String(searchUserId).trim()) return;
 		loading = true;
 		try {
 			const res = await admin.getImagesByUser(Number(searchUserId));
