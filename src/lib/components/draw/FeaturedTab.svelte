@@ -21,11 +21,6 @@
 	let loading = $state(true);
 	let names = $state<Record<string, string>>({});
 
-	function creatorLabel(item: DrawOutputItem): string {
-		if (!item.creator_id) return '';
-		return names[item.creator_id] || `UID:${item.creator_id}`;
-	}
-
 	$effect(() => {
 		for (const item of items) {
 			if (item.creator_id && !(item.creator_id in names)) {
@@ -44,6 +39,10 @@
 	function initLightbox() {
 		lightbox?.destroy();
 		if (!galleryEl) return;
+		const creatorMap = new Map<string, string>();
+		for (const it of items) {
+			if (it.creator_id) creatorMap.set(getImageUrl(it.path), it.creator_id);
+		}
 		lightbox = new PhotoSwipeLightbox({
 			gallery: galleryEl,
 			children: 'a',
@@ -56,10 +55,12 @@
 				src: a.href,
 				width: img?.naturalWidth || 1600,
 				height: img?.naturalHeight || 1200,
-				alt: img?.alt || ''
+				alt: img?.alt || '',
+				creator_id: creatorMap.get(a.href) || ''
 			};
 		});
 		if (onFork) addForkButton(lightbox);
+		addCreatorElement(lightbox);
 		lightbox.init();
 	}
 
@@ -77,6 +78,45 @@
 					const p = new URL(src, location.origin).searchParams.get('path');
 					if (p) onFork!(p);
 					pswp.close();
+				}
+			});
+		});
+	}
+
+	function addCreatorElement(lb: PhotoSwipeLightbox) {
+		lb.on('uiRegister', () => {
+			lb.pswp.ui.registerElement({
+				name: 'creator-info',
+				order: 8,
+				appendTo: 'wrapper',
+				onInit: (el) => {
+					Object.assign(el.style, {
+						position: 'absolute',
+						bottom: '60px',
+						left: '50%',
+						transform: 'translateX(-50%)',
+						background: 'rgba(0,0,0,0.6)',
+						color: '#fff',
+						padding: '4px 12px',
+						borderRadius: '4px',
+						fontSize: '13px',
+						cursor: 'pointer',
+						zIndex: '10',
+						whiteSpace: 'nowrap',
+						display: 'none'
+					});
+					lb.pswp.on('change', () => {
+						const data = lb.pswp.currSlide?.data as Record<string, unknown> | undefined;
+						const cid = (data?.creator_id as string) || '';
+						if (cid) {
+							const label = names[cid] || `UID:${cid}`;
+							el.textContent = `生图者: ${label}`;
+							el.onclick = () => window.open(`/forum/u/${cid}`, '_blank');
+							el.style.display = 'block';
+						} else {
+							el.style.display = 'none';
+						}
+					});
 				}
 			});
 		});
@@ -129,7 +169,7 @@
 			{#each items as item}
 				<a
 					href={getImageUrl(item.path)}
-					class="aspect-square rounded-lg overflow-hidden border hover:ring-2 hover:ring-primary/50 transition-all block relative group"
+					class="aspect-square rounded-lg overflow-hidden border hover:ring-2 hover:ring-primary/50 transition-all block"
 				>
 					<img
 						src={getImageProxyUrl(item.path)}
@@ -137,14 +177,6 @@
 						class="w-full h-full object-cover"
 						loading="lazy"
 					/>
-					{#if item.creator_id}
-						<span
-							class="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:underline"
-							onclick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(`/forum/u/${item.creator_id}`, '_blank'); }}
-						>
-							{creatorLabel(item)}
-						</span>
-					{/if}
 				</a>
 			{/each}
 		</div>
