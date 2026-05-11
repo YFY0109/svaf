@@ -175,9 +175,9 @@
 		}
 
 		isGenerating = true;
-		showProgress = true;
 		progressMessages = [];
 		resultImages = [];
+		showProgress = true;
 
 		const ratingTag = `rating:${safetyRating}`;
 		const finalDirectPrompt = directPrompt
