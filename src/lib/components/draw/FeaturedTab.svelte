@@ -43,6 +43,12 @@
 		for (const it of items) {
 			if (it.creator_id) creatorByPath.set(it.path, it.creator_id);
 		}
+		console.log('[FeaturedTab] initLightbox', {
+			itemCount: items.length,
+			creatorMapSize: creatorByPath.size,
+			creatorEntries: [...creatorByPath.entries()],
+			sampleItems: items.slice(0, 3).map(i => ({ path: i.path, creator_id: i.creator_id }))
+		});
 		lightbox = new PhotoSwipeLightbox({
 			gallery: galleryEl,
 			children: 'a',
@@ -106,9 +112,11 @@
 					});
 					function update() {
 						const src = lb.pswp.currSlide?.data?.src;
+						console.log('[FeaturedTab] creator update', { src, hasCurrSlide: !!lb.pswp.currSlide, data: lb.pswp.currSlide?.data });
 						if (!src) { el.style.display = 'none'; return; }
 						const p = new URL(src, location.origin).searchParams.get('path');
 						const cid = p ? (creatorByPath.get(p) || '') : '';
+						console.log('[FeaturedTab] creator lookup', { path: p, cid, mapKeys: [...creatorByPath.keys()].slice(0, 5) });
 						if (cid) {
 							const label = names[cid] || `UID:${cid}`;
 							el.textContent = `生图者: ${label}`;
@@ -135,6 +143,7 @@
 		loading = true;
 		try {
 			const res = await fetchFeatured();
+			console.log('[FeaturedTab] API response', { total: res.total, itemCount: res.items.length, sample: res.items.slice(0, 3) });
 			items = res.items;
 		} catch {
 			items = [];

@@ -44,6 +44,12 @@
 		for (const it of items) {
 			if (it.creator_id) creatorByPath.set(it.path, it.creator_id);
 		}
+		console.log('[GalleryTab] initLightbox', {
+			itemCount: items.length,
+			creatorMapSize: creatorByPath.size,
+			creatorEntries: [...creatorByPath.entries()],
+			sampleItems: items.slice(0, 3).map(i => ({ path: i.path, creator_id: i.creator_id }))
+		});
 		lightbox = new PhotoSwipeLightbox({
 			gallery: galleryEl,
 			children: 'a',
@@ -107,9 +113,11 @@
 					});
 					function update() {
 						const src = lb.pswp.currSlide?.data?.src;
+						console.log('[GalleryTab] creator update', { src, hasCurrSlide: !!lb.pswp.currSlide, data: lb.pswp.currSlide?.data });
 						if (!src) { el.style.display = 'none'; return; }
 						const p = new URL(src, location.origin).searchParams.get('path');
 						const cid = p ? (creatorByPath.get(p) || '') : '';
+						console.log('[GalleryTab] creator lookup', { path: p, cid, mapKeys: [...creatorByPath.keys()].slice(0, 5) });
 						if (cid) {
 							const label = names[cid] || `UID:${cid}`;
 							el.textContent = `生图者: ${label}`;
@@ -140,6 +148,7 @@
 		loading = true;
 		try {
 			const res = await fetchOutputList(limit, 0);
+			console.log('[GalleryTab] API response', { total: res.total, itemCount: res.items.length, sample: res.items.slice(0, 3) });
 			items = res.items;
 			total = res.total;
 			offset = res.items.length;
