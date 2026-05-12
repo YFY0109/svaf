@@ -142,13 +142,8 @@
 			if (fork.default_width) width = fork.default_width;
 			if (fork.default_height) height = fork.default_height;
 			forkSeed = fork.seed;
-			if (fork.workflow_path) {
-				workflowPath = fork.workflow_path;
-				workflowName = fork.workflow_path.replace('.json', '');
-			} else {
-				workflowPath = '';
-				workflowName = '(fork)';
-			}
+			workflowPath = 'fork';
+			workflowName = '(fork)';
 			styleTags = '';
 			styleName = '';
 			activeTab = 'generate';
@@ -231,13 +226,8 @@
 			if (res.default_width) width = res.default_width;
 			if (res.default_height) height = res.default_height;
 			forkSeed = res.seed;
-			if (res.workflow_path) {
-				workflowPath = res.workflow_path;
-				workflowName = res.workflow_path.replace('.json', '');
-			} else {
-				workflowPath = '';
-				workflowName = '(fork)';
-			}
+			workflowPath = 'fork';
+			workflowName = '(fork)';
 			styleTags = '';
 			styleName = '';
 			activeTab = 'generate';

@@ -7,7 +7,6 @@ interface ForkData {
 	default_width: number | null;
 	default_height: number | null;
 	seed?: number;
-	workflow_path?: string;
 }
 
 export const pendingFork = writable<ForkData | null>(null);
