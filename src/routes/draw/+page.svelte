@@ -371,20 +371,20 @@
 	<!-- Environment Switcher -->
 	<EnvironmentSwitcher />
 
-	<!-- Maintenance Dialog (non-closable) -->
-	<Dialog.Root bind:open={showMaintenanceDialog} closeOnEscape={false} closeOnOutsideClick={false}>
-		<Dialog.Content showCloseButton={false}>
-			<Dialog.Header>
-				<Dialog.Title class="flex items-center gap-2">
+	<!-- Maintenance fullscreen overlay (non-closable) -->
+	{#if showMaintenanceDialog}
+		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+			<div class="bg-popover text-popover-foreground rounded-4xl p-6 max-w-md w-full mx-4 ring-1 ring-foreground/5">
+				<div class="flex items-center gap-2 mb-3">
 					<Icon icon="mdi:tools" class="size-5 text-destructive" />
-					目前处于维护状态
-				</Dialog.Title>
-				<Dialog.Description>
+					<h2 class="text-lg font-semibold">目前处于维护状态</h2>
+				</div>
+				<p class="text-sm text-muted-foreground">
 					{maintenance?.message || '站点维护中，部分功能可能不可用，请稍后再试。'}
-				</Dialog.Description>
-			</Dialog.Header>
-		</Dialog.Content>
-	</Dialog.Root>
+				</p>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Auth warning -->
 	{#if !isLoggedIn}
