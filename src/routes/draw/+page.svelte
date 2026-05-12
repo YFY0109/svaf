@@ -381,7 +381,7 @@
 					<Icon icon="mdi:tools" class="size-5 text-destructive" />
 					<h2 class="text-lg font-semibold">目前处于维护状态</h2>
 				</div>
-				<div class="text-sm text-muted-foreground prose-p:text-foreground prose-a:text-primary prose-a:underline prose-a:underline-offset-4">
+				<div class="text-sm text-muted-foreground prose-headings:text-foreground prose-h1:text-xl prose-h1:font-bold prose-h1:mt-4 prose-h1:mb-2 prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-3 prose-h2:mb-1.5 prose-h3:text-base prose-h3:font-semibold prose-h3:mt-2 prose-h3:mb-1 prose-p:text-foreground prose-a:text-primary prose-a:underline prose-a:underline-offset-4 prose-strong:text-foreground">
 					{@html maintenanceHtml || '站点维护中，部分功能可能不可用，请稍后再试。'}
 				</div>
 			</div>
