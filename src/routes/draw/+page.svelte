@@ -139,8 +139,10 @@
 			if (fork.builtin_negative_prompt) negativePrompt = fork.builtin_negative_prompt;
 			if (fork.default_width) width = fork.default_width;
 			if (fork.default_height) height = fork.default_height;
-			workflowPath = '';
+			workflowPath = '(fork)';
 			workflowName = '(fork)';
+			styleTags = '(fork)';
+			styleName = '(fork)';
 			activeTab = 'generate';
 		}
 
@@ -218,8 +220,10 @@
 			if (res.builtin_negative_prompt) negativePrompt = res.builtin_negative_prompt;
 			if (res.default_width) width = res.default_width;
 			if (res.default_height) height = res.default_height;
-			workflowPath = '';
+			workflowPath = '(fork)';
 			workflowName = '(fork)';
+			styleTags = '(fork)';
+			styleName = '(fork)';
 			activeTab = 'generate';
 		} catch (e) {
 			alert(e instanceof Error ? e.message : 'Fork 失败');
