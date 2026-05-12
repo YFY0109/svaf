@@ -19,8 +19,8 @@
 		loadStatus();
 	});
 
-	async function loadStatus() {
-		loading = true;
+	async function loadStatus(silent = false) {
+		if (!silent) loading = true;
 		try {
 			const [gpuRes, annRes] = await Promise.all([fetchGpuStatus(), fetchAnnouncement()]);
 			gpu = gpuRes.gpus;
@@ -36,9 +36,9 @@
 		}
 	}
 
-	// 每 5 秒自动刷新
+	// 每 5 秒静默刷新
 	$effect(() => {
-		const interval = setInterval(loadStatus, 5000);
+		const interval = setInterval(() => loadStatus(true), 5000);
 		return () => clearInterval(interval);
 	});
 </script>
