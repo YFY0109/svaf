@@ -23,6 +23,8 @@
 
 	let llmText = $state('');
 	let llmVisible = $state(false);
+	let llmFinalPositive = $state('');
+	let llmFinalNegative = $state('');
 	let llmContainer: HTMLPreElement | undefined = $state();
 
 	$effect(() => {
@@ -56,6 +58,8 @@
 			lastProcessed = 0;
 			llmText = '';
 			llmVisible = false;
+			llmFinalPositive = '';
+			llmFinalNegative = '';
 			progressNode = '';
 			progressValue = 0;
 			progressMax = 0;
@@ -82,6 +86,8 @@
 					break;
 				case 'llm_done':
 					llmVisible = false;
+					llmFinalPositive = msg.text || '';
+					llmFinalNegative = msg.negative || '';
 					break;
 				case 'progress':
 					progressNode = msg.node;
@@ -170,16 +176,26 @@
 		{/if}
 
 		<!-- LLM streaming -->
-		{#if llmVisible || llmText}
+		{#if llmVisible}
 			<div class="space-y-1">
 				<div class="text-xs font-medium flex items-center gap-1.5">
 					<Icon icon="mdi:brain" class="size-3.5" />
 					LLM 处理中...
-					{#if llmVisible}
-						<Icon icon="mdi:loading" class="size-3 animate-spin" />
-					{/if}
+					<Icon icon="mdi:loading" class="size-3 animate-spin" />
 				</div>
 				<pre bind:this={llmContainer} class="text-xs bg-yellow-50 dark:bg-yellow-950/30 border rounded-md p-2 max-h-40 overflow-y-auto whitespace-pre-wrap">{llmText}</pre>
+			</div>
+		{/if}
+
+		<!-- Final prompt -->
+		{#if llmFinalPositive}
+			<div class="space-y-1.5">
+				<div class="text-xs font-medium">最终Prompt：</div>
+				<div class="text-xs bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-2 whitespace-pre-wrap">{llmFinalPositive}</div>
+				{#if llmFinalNegative}
+					<div class="text-xs text-muted-foreground mt-1">负面提示词：</div>
+					<div class="text-xs bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md p-2 whitespace-pre-wrap">{llmFinalNegative}</div>
+				{/if}
 			</div>
 		{/if}
 
