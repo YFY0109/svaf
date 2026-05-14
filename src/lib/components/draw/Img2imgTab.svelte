@@ -18,9 +18,40 @@
 	let apiErrorMessage = $state('');
 
 	let images = $state<{ file: File; dataUrl: string }[]>([]);
+	let dragIndex = $state<number | null>(null);
+	let dragOverIndex = $state<number | null>(null);
 	let prompt = $state('');
 	let uploading = $state(false);
 	let error = $state('');
+
+	function handleDragStart(i: number) {
+		dragIndex = i;
+	}
+
+	function handleDragOver(e: Event, i: number) {
+		e.preventDefault();
+		dragOverIndex = i;
+	}
+
+	function handleDrop(i: number) {
+		if (dragIndex === null || dragIndex === i) {
+			dragIndex = null;
+			dragOverIndex = null;
+			return;
+		}
+		const arr = [...images];
+		const [moved] = arr.splice(dragIndex, 1);
+		arr.splice(i, 0, moved);
+		images = arr;
+		dragIndex = null;
+		dragOverIndex = null;
+		saveState();
+	}
+
+	function handleDragEnd() {
+		dragIndex = null;
+		dragOverIndex = null;
+	}
 
 	// WebSocket progress state
 	let progressMessages = $state<WsRunMessage[]>([]);
@@ -223,16 +254,31 @@
 				上传图片
 				<Badge variant="secondary" class="text-xs">{images.length}/2</Badge>
 			</h3>
+			{#if images.length > 1}
+				<span class="text-xs text-muted-foreground">拖拽调整顺序</span>
+			{/if}
 		</div>
 
 		<div class="flex gap-3 flex-wrap">
 			{#each images as item, i}
-				<div class="relative group">
+				<div
+					class="relative group {dragOverIndex === i && dragIndex !== null && dragIndex !== i ? 'ring-2 ring-primary rounded-lg' : ''}"
+					draggable="true"
+					ondragstart={() => handleDragStart(i)}
+					ondragover={(e) => handleDragOver(e, i)}
+					ondrop={() => handleDrop(i)}
+					ondragend={handleDragEnd}
+					role="button"
+					tabindex="-1"
+				>
 					<img
 						src={item.dataUrl}
 						alt="preview {i}"
 						class="size-28 object-cover rounded-lg border border-border"
 					/>
+					<div class="absolute top-1 left-1 size-5 rounded-full bg-background/80 flex items-center justify-center text-xs font-medium text-muted-foreground">
+						{i + 1}
+					</div>
 					<button
 						class="absolute -top-2 -right-2 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
 						onclick={() => removeImage(i)}
