@@ -115,6 +115,8 @@ export async function resolveApiRedirect(): Promise<void> {
 	console.log(`当前API：${baseUrl}`);
 	try {
 		const resp = await fetch(baseUrl, { method: 'HEAD', redirect: 'manual' });
+		console.log('原始响应状态:', resp.status, resp.statusText);
+		resp.headers.forEach((v, k) => console.log('  响应头:', k, '=', v));
 		if (resp.status >= 300 && resp.status < 400) {
 			const location = resp.headers.get('location');
 			if (location) {
