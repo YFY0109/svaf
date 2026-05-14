@@ -71,26 +71,15 @@
 
 	const thinkingLabels: Record<string, string> = {
 		off: '关闭',
-		level_minimal: 'minimal（几乎不思考）',
-		level_low: 'low（低延迟）',
-		level_medium: 'medium（平衡）',
-		level_high: 'high（深度推理）',
-		budget_auto: '自动',
-		budget_0: '0（关闭思考）',
-		budget_512: '512 tokens',
-		budget_1024: '1024 tokens',
-		budget_2048: '2048 tokens',
-		budget_4096: '4096 tokens',
-		budget_8192: '8192 tokens',
-		budget_16384: '16384 tokens',
-		budget_24576: '24576 tokens',
-		budget_32768: '32768 tokens',
+		level_minimal: 'minimal',
+		level_low: 'low',
+		level_medium: 'medium',
+		level_high: 'high',
 	};
 
 	const thinkingGroups: Array<{ label: string; options: string[] }> = [
 		{ label: '关闭', options: ['off'] },
-		{ label: 'Gemini 3 系列 (thinkingLevel)', options: ['level_minimal', 'level_low', 'level_medium', 'level_high'] },
-		{ label: 'Gemini 2.5 系列 (thinkingBudget)', options: ['budget_auto', 'budget_0', 'budget_512', 'budget_1024', 'budget_2048', 'budget_4096', 'budget_8192', 'budget_16384', 'budget_24576', 'budget_32768'] },
+		{ label: 'Level (Gemini 3 系列)', options: ['level_minimal', 'level_low', 'level_medium', 'level_high'] },
 	];
 
 	// GC
