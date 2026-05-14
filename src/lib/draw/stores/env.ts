@@ -101,3 +101,35 @@ function createEnvStore(): DrawEnvStore {
 }
 
 export const drawEnv: DrawEnvStore = createEnvStore();
+
+const _redirectStore = writable<string>('');
+
+/**
+ * 探测 API 端点是否有重定向（CDN / 负载均衡），
+ * 如有则后续请求全部使用重定向后的地址。
+ * 应在页面加载时调用一次。
+ */
+export async function resolveApiRedirect(): Promise<string> {
+	const baseUrl = get(drawEnv.baseUrl);
+	try {
+		const resp = await fetch(baseUrl, { method: 'HEAD', redirect: 'manual' });
+		if (resp.status >= 300 && resp.status < 400) {
+			const location = resp.headers.get('location');
+			if (location) {
+				const resolved = new URL(location, baseUrl).toString().replace(/\/+$/, '');
+				if (resolved !== baseUrl) {
+					_redirectStore.set(resolved);
+					drawEnv.customBaseUrl.set(resolved);
+					return resolved;
+				}
+			}
+		}
+	} catch {
+		// 忽略错误，继续使用原地址
+	}
+	return baseUrl;
+}
+
+export const drawRedirectUrl = {
+	subscribe: _redirectStore.subscribe,
+};

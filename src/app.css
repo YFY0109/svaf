@@ -174,28 +174,14 @@ pre code.hljs {
 	background: transparent;
 }
 
-/* 暗色模式滚动条 */
-.dark ::-webkit-scrollbar,
-.dark textarea::-webkit-scrollbar {
-	width: 6px;
-	height: 6px;
+/* 隐藏代码块滚动条（Shift+滚轮 / 触屏仍可滚动） */
+pre::-webkit-scrollbar,
+pre code::-webkit-scrollbar {
+	display: none;
 }
-.dark ::-webkit-scrollbar-track,
-.dark textarea::-webkit-scrollbar-track {
-	background: transparent;
-}
-.dark ::-webkit-scrollbar-thumb,
-.dark textarea::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.2);
-	border-radius: 3px;
-}
-.dark ::-webkit-scrollbar-thumb:hover,
-.dark textarea::-webkit-scrollbar-thumb:hover {
-	background: rgba(255, 255, 255, 0.35);
-}
-.dark * {
-	scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-	scrollbar-width: thin;
+pre,
+pre code {
+	scrollbar-width: none;
 }
 
 /* Motion One 初始隐藏状态（paint 前生效，避免闪烁） */
