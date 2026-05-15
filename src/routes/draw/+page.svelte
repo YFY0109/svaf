@@ -252,7 +252,7 @@
 	}
 
 
-	function startGeneration() {
+	async function startGeneration() {
 			if (queuing) return;
 			if (!authToken) {
 				alert('请先在论坛登录');
