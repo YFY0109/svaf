@@ -680,39 +680,34 @@
 					<div class="space-y-3">
 						<!-- 队列状态 -->
 						<div class="space-y-2">
-							<div class="flex items-center justify-between">
-								<h3 class="text-sm font-medium flex items-center gap-1.5">
-									<Icon icon="mdi:queue-play" class="size-4" />
-									队列等待中
-									{#if myQueueLoading}
-										<span class="text-xs text-muted-foreground">加载中...</span>
-									{:else if myQueueItems.length > 0}
-										<Badge variant="secondary" class="text-[10px] px-1 py-0">{myQueueItems.length}</Badge>
-									{/if}
-								</h3>
-								{#if !myQueueLoading}
+							{#if myQueueLoading}
+								<div class="text-xs text-muted-foreground py-3 text-center">加载中...</div>
+							{:else if myQueueItems.length > 0}
+								<div class="flex items-center justify-between">
+									<h3 class="text-sm font-medium flex items-center gap-1.5">
+										<Icon icon="mdi:queue-play" class="size-4" />
+										队列状态
+									</h3>
 									<Button variant="ghost" size="sm" onclick={loadMyQueue}>
 										<Icon icon="mdi:refresh" class="size-4" />
 									</Button>
-								{/if}
-							</div>
-							{#if myQueueItems.length === 0}
-								<div class="text-xs text-muted-foreground py-3 text-center">暂无排队任务</div>
-							{:else}
+								</div>
 								<div class="space-y-1">
 									{#each myQueueItems as item}
 										<div class="flex items-center gap-2 text-xs border rounded-lg px-3 py-2">
 											{#if item.status === 'running'}
 												<Icon icon="mdi:loading" class="size-4 animate-spin text-primary" />
-												<span class="flex-1">正在生图中...</span>
-											{:else if item.status === 'pending'}
+												<span class="flex-1">正在生图中</span>
+											{:else}
 												<Icon icon="mdi:clock-outline" class="size-4 text-muted-foreground" />
-												<span class="flex-1">排队中 {item.position ? `#第${item.position}位` : ''}</span>
+												<span class="flex-1">等待生图中，前面还有 {item.position ? item.position - 1 : 0} 位</span>
 											{/if}
 											<span class="text-muted-foreground">{formatTimeAgo(item.created_at)}</span>
 										</div>
 									{/each}
 								</div>
+							{:else}
+								<div class="text-xs text-muted-foreground py-3 text-center">暂无排队任务</div>
 							{/if}
 						</div>
 
