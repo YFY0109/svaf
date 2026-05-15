@@ -377,7 +377,8 @@
 		myQueueLoading = true;
 		try {
 			const res = await fetchMyQueue();
-			myQueueItems = res.items.filter(it => it.status === 'pending' || it.status === 'running');
+			const now = res.items;
+			myQueueItems = now.filter(it => it.status === 'pending' || it.status === 'running' || it.status === 'failed');
 		} catch {
 			myQueueItems = [];
 		} finally {
@@ -694,10 +695,13 @@
 								</div>
 								<div class="space-y-1">
 									{#each myQueueItems as item}
-										<div class="flex items-center gap-2 text-xs border rounded-lg px-3 py-2">
+										<div class="flex items-center gap-2 text-xs border rounded-lg px-3 py-2 {item.status === 'failed' ? 'border-red-300 bg-red-50 dark:bg-red-950/30' : ''}">
 											{#if item.status === 'running'}
 												<Icon icon="mdi:loading" class="size-4 animate-spin text-primary" />
 												<span class="flex-1">正在生图中</span>
+											{:else if item.status === 'failed'}
+												<Icon icon="mdi:alert-circle" class="size-4 text-red-500" />
+												<span class="flex-1 truncate">{item.error || '生图失败'}</span>
 											{:else}
 												<Icon icon="mdi:clock-outline" class="size-4 text-muted-foreground" />
 												<span class="flex-1">等待生图中，前面还有 {item.position ? item.position - 1 : 0} 位</span>
