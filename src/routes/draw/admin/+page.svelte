@@ -13,7 +13,7 @@
 	import { forumAuth } from '$lib/forum/stores/auth';
 	import { drawEnv } from '$lib/draw/stores/env';
 	import * as admin from '$lib/draw/api/admin';
-	import { getImageProxyUrl, getImageUrl, getThumbnailUrl, forkOutputImage, clearQueue } from '$lib/draw/api/client';
+	import { getImageProxyUrl, getImageUrl, getThumbnailUrl, forkOutputImage, clearQueue, fetchDebugInfo } from '$lib/draw/api/client';
 	import { pendingFork } from '$lib/draw/stores/fork';
 	import { onMount, onDestroy } from 'svelte';
 import ImageLightbox from '$lib/components/draw/ImageLightbox.svelte';
@@ -91,6 +91,9 @@ let loadingMore = $state(false);
 
 	// GC
 	let gcResult = $state<Record<string, number> | null>(null);
+	let debugData = $state<any>(null);
+	let debugLoading = $state(false);
+	let debugError = $state('');
 
 	// Styles
 	let styles = $state<import('$lib/draw/types').DrawStyle[]>([]);
@@ -561,6 +564,18 @@ let loadingMore = $state(false);
 		styleEditIndex = -1;
 	}
 
+	async function loadDebug() {
+		debugLoading = true;
+		debugError = '';
+		try {
+			debugData = await fetchDebugInfo();
+		} catch (e) {
+			debugError = e instanceof Error ? e.message : '加载失败';
+		} finally {
+			debugLoading = false;
+		}
+	}
+
 	async function commitStyleRename() {
 		if (styleRenaming < 0) return;
 		const updated = [...styles];
@@ -880,6 +895,9 @@ function formatTime(ts: number) {
 				</TabsTrigger>
 				<TabsTrigger value="gc" class="text-xs">
 					<Icon icon="mdi:broom" class="size-3.5 mr-1" />GC
+				</TabsTrigger>
+				<TabsTrigger value="debug" class="text-xs">
+					<Icon icon="mdi:bug-outline" class="size-3.5 mr-1" />调试
 				</TabsTrigger>
 				<TabsTrigger value="styles" class="text-xs">
 					<Icon icon="mdi:palette-outline" class="size-3.5 mr-1" />画风
@@ -1352,6 +1370,126 @@ function formatTime(ts: number) {
 										<span class="font-mono">{val}</span>
 									</div>
 								{/each}
+							</div>
+						{/if}
+					</CardContent>
+				</Card>
+			</TabsContent>
+
+			<TabsContent value="debug" class="mt-4">
+				<Card>
+					<CardHeader>
+						<CardTitle class="text-base flex items-center gap-2">
+							<Icon icon="mdi:bug-outline" class="size-5" />
+							生图调试总览
+						</CardTitle>
+						<CardDescription>活跃状态、队列统计、卡住任务</CardDescription>
+					</CardHeader>
+					<CardContent class="space-y-4">
+						<Button variant="outline" size="sm" onclick={loadDebug} disabled={debugLoading}>
+							<Icon icon="mdi:refresh" class="size-4 mr-1" />
+							{debugLoading ? '加载中...' : '刷新'}
+						</Button>
+
+						{#if debugError}
+							<Alert variant="destructive">
+								<Icon icon="mdi:alert-circle" class="size-4" />
+								<AlertDescription class="text-xs">{debugError}</AlertDescription>
+							</Alert>
+						{/if}
+
+						{#if debugData}
+							<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+								<div class="border rounded-lg p-3 text-center">
+									<div class="text-2xl font-bold {debugData.active.count > 0 ? 'text-green-500' : 'text-muted-foreground'}">{debugData.active.count}</div>
+									<div class="text-xs text-muted-foreground">活跃中</div>
+								</div>
+								<div class="border rounded-lg p-3 text-center">
+									<div class="text-2xl font-bold {debugData.active.semaphore_locked ? 'text-amber-500' : 'text-muted-foreground'}">{debugData.active.semaphore_locked ? '锁定' : '空闲'}</div>
+									<div class="text-xs text-muted-foreground">信号量</div>
+								</div>
+								<div class="border rounded-lg p-3 text-center">
+									<div class="text-2xl font-bold">{debugData.active.subscribers}</div>
+									<div class="text-xs text-muted-foreground">WS 订阅</div>
+								</div>
+								<div class="border rounded-lg p-3 text-center">
+									<div class="text-2xl font-bold">{Object.values(debugData.queue_stats as Record<string, number>).reduce((a, b) => a + b, 0)}</div>
+									<div class="text-xs text-muted-foreground">总队列</div>
+								</div>
+							</div>
+
+							<div>
+								<h4 class="text-sm font-medium mb-2">队列状态分布</h4>
+								<div class="flex flex-wrap gap-2">
+									{#each Object.entries(debugData.queue_stats) as [status, count]}
+										{#if count > 0}
+											<Badge variant={status === 'failed' ? 'destructive' : status === 'done' ? 'default' : 'secondary'} class="text-xs">
+												{status}: {count}
+											</Badge>
+										{/if}
+									{/each}
+								</div>
+							</div>
+
+							{#if debugData.queue_users.length > 0}
+								<div>
+									<h4 class="text-sm font-medium mb-2">队列中的用户</h4>
+									<div class="flex flex-wrap gap-2">
+										{#each debugData.queue_users as [uid, count]}
+											<Badge variant="secondary" class="text-xs">
+												UID {uid} x {count}
+											</Badge>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if debugData.stuck.length > 0}
+								<div>
+									<h4 class="text-sm font-medium mb-2 text-red-500">卡住任务 ({debugData.stuck.length})</h4>
+									<div class="space-y-1">
+										{#each debugData.stuck as item}
+											<div class="flex items-center gap-2 text-xs border rounded px-3 py-2">
+												<Icon icon="mdi:alert" class="size-4 text-red-500" />
+												<span>UID {item.user_id}</span>
+												<Badge variant="destructive" class="text-[10px]">{item.status}</Badge>
+												<span class="text-muted-foreground">ID:{item.id}</span>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							<div>
+								<h4 class="text-sm font-medium mb-2">最近 20 条队列项</h4>
+								<div class="overflow-x-auto">
+									<table class="w-full text-xs">
+										<thead>
+											<tr class="border-b text-left text-muted-foreground">
+												<th class="py-1 pr-2">ID</th>
+												<th class="py-1 pr-2">UID</th>
+												<th class="py-1 pr-2">状态</th>
+												<th class="py-1 pr-2">创建</th>
+												<th class="py-1 pr-2">启动</th>
+												<th class="py-1 pr-2">错误</th>
+											</tr>
+										</thead>
+										<tbody>
+											{#each debugData.recent_items as item}
+												<tr class="border-b">
+													<td class="py-1 pr-2 font-mono">{item.id}</td>
+													<td class="py-1 pr-2">{item.user_id}</td>
+													<td class="py-1 pr-2">
+														<Badge variant={item.status === 'failed' ? 'destructive' : item.status === 'done' ? 'default' : item.status === 'running' ? 'default' : 'secondary'} class="text-[10px]">{item.status}</Badge>
+													</td>
+													<td class="py-1 pr-2 text-muted-foreground">{item.created_ago}s前</td>
+													<td class="py-1 pr-2 text-muted-foreground">{item.started_ago != null ? `{item.started_ago}s前` : '-'}</td>
+													<td class="py-1 pr-2 text-red-500 max-w-[200px] truncate">{item.error || '-'}</td>
+												</tr>
+											{/each}
+										</tbody>
+									</table>
+								</div>
 							</div>
 						{/if}
 					</CardContent>
