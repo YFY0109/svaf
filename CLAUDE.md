@@ -13,6 +13,9 @@
 3. 创建 Git 提交
 4. 退出（不等待测试结果）
 
+## 开发工具
+- 编辑文件：仅使用 Read 和 Edit 工具。不使用 Python、PowerShell、Bash cat 等工具修改文件。
+
 ## 提交规范
 - `feat:` - 新功能
 - `fix:` - 修复 bug
