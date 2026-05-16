@@ -24,6 +24,7 @@
 	let uploading = $state(false);
 	let uploadProgress = $state(0);
 	let error = $state('');
+	let queueSuccess = $state('');
 
 	function uploadFileWithProgress(url: string, headers: Headers, form: FormData, onProgress: (pct: number) => void): Promise<Response> {
 		return new Promise((resolve, reject) => {
@@ -223,6 +224,7 @@ function handlePromptInput(e: Event) {
 		}
 
 		error = '';
+		queueSuccess = '';
 		uploading = true;
 		uploadProgress = 0;
 
@@ -234,6 +236,7 @@ function handlePromptInput(e: Event) {
 				image2_name: uploadData.image2_name || '',
 			});
 			uploading = false;
+			queueSuccess = '成功加入队列！等待生图中，前往"我的"页面查看详情。';
 		} catch (e) {
 			uploading = false;
 			error = e instanceof Error ? e.message : '生成失败';
@@ -358,4 +361,10 @@ function handlePromptInput(e: Event) {
 			<AlertDescription class="text-xs">{error}</AlertDescription>
 		</Alert>
 	{/if}
+t	{#if queueSuccess}
+			<Alert>
+				<Icon icon="mdi:check-circle" class="size-4" />
+				<AlertDescription class="text-xs">{queueSuccess}</AlertDescription>
+			</Alert>
+		{/if}
 </div>
