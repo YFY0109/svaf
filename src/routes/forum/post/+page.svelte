@@ -17,7 +17,7 @@
 	import CommentItem from '$lib/components/forum/CommentItem.svelte';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { deletePost, getPost, getPostLikeStatus, likePost, updatePost } from '$lib/forum/api/posts';
+	import { deletePost, getPost, getPostLikeStatus, likePost, updatePost, reportPost } from '$lib/forum/api/posts';
 	import { getCategories } from '$lib/forum/api/categories';
 	import { getSession } from '$lib/forum/api/auth';
 	import { getForumConfig } from '$lib/forum/api/config';
@@ -53,6 +53,24 @@
 	let editContent = $state('');
 	let editCategoryId = $state('');
 	let editSubmitting = $state(false);
+	let reportReason = $state('');
+	let reportBusy = $state(false);
+	let reportOpen = $state(false);
+
+	async function handleReport() {
+		if (reportBusy || !reportReason.trim()) return;
+		reportBusy = true;
+		try {
+			await reportPost(postId, reportReason.trim());
+			reportReason = '';
+			reportOpen = false;
+			emitSuccessToast('举报帖子', '已收到举报，管理员会尽快处理。');
+		} catch (e) {
+			emitErrorToast('举报帖子', e instanceof Error ? e.message : '举报失败，请稍后再试。');
+		} finally {
+			reportBusy = false;
+		}
+	}
 	let categories = $state<ForumCategory[]>([]);
 	let categoriesLoaded = $state(false);
 
@@ -450,7 +468,24 @@
 									删除
 								</Button>
 							{/if}
+							{#if $forumAuth.token}
+								<Button variant="ghost" size="sm" onclick={() => (reportOpen = !reportOpen)}>
+									<Icon icon="mdi:flag-outline" class="size-4" />
+									举报
+								</Button>
+							{/if}
 						</div>
+						{#if reportOpen}
+							<div class="mt-3 space-y-2 rounded-lg border p-3 bg-muted/20">
+								<textarea bind:value={reportReason} placeholder="请描述举报原因..." class="w-full min-h-[60px] rounded border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"></textarea>
+								<div class="flex justify-end gap-2">
+									<Button variant="ghost" size="sm" onclick={() => { reportOpen = false; reportReason = ''; }}>取消</Button>
+									<Button size="sm" onclick={handleReport} disabled={reportBusy || !reportReason.trim()}>
+										{#if reportBusy}<Icon icon="mdi:loading" class="size-4 animate-spin mr-1" />{/if}提交举报
+									</Button>
+								</div>
+							</div>
+						{/if}
 					</div>
 					{#if editing}
 						<div class="space-y-3">

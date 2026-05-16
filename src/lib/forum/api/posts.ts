@@ -221,3 +221,11 @@ export function deletePost(id: string): Promise<{ success: boolean }> {
 		requiresAuth: true
 	});
 }
+
+export function reportPost(id: string, reason: string): Promise<{ ok: boolean }> {
+	return forumRequest<{ ok: boolean }>(`/api/posts/${id}/report`, {
+		method: 'POST',
+		requiresAuth: true,
+		json: { reason }
+	});
+}
