@@ -1568,6 +1568,7 @@ function formatTime(ts: number) {
 												<th class="py-1 pr-2">状态</th>
 												<th class="py-1 pr-2">创建</th>
 												<th class="py-1 pr-2">启动</th>
+												<th class="py-1 pr-2">用户输入</th>
 												<th class="py-1 pr-2">LLM输出/错误</th>
 											</tr>
 										</thead>
@@ -1581,7 +1582,8 @@ function formatTime(ts: number) {
 													</td>
 													<td class="py-1 pr-2 text-muted-foreground">{item.created_ago}s前</td>
 													<td class="py-1 pr-2 text-muted-foreground">{item.started_ago != null ? `${item.started_ago}s前` : '-'}</td>
-													<td class="py-1 pr-2 break-all max-w-xs text-muted-foreground">{item.prompt || item.error || '-'}</td>
+													<td class="py-1 pr-2 break-all max-w-[120px] text-muted-foreground">{item.nl_prompt || '-'}</td>
+													<td class="py-1 pr-2 break-all max-w-xs text-muted-foreground">{item.llm_output || item.error || '-'}</td>
 												</tr>
 											{/each}
 										</tbody>
