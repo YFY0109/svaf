@@ -1052,9 +1052,8 @@ function formatTime(ts: number) {
 													<Icon icon="mdi:delete" class="size-3.5" />
 												</button>
 											</div>
-											<div class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[11px] px-1.5 py-0.5 pointer-events-none flex items-center justify-between">
-												<span>UID:{img.user_id || '?'}</span>
-												<span class="underline cursor-pointer pointer-events-auto" onclick={(e) => { e.stopPropagation(); openLb(img.path); }} onkeydown={() => {}} role="button" tabindex="-1">详情</span>
+											<div class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[11px] px-1.5 py-0.5 truncate pointer-events-none">
+												UID:{img.user_id || '?'}
 											</div>
 										</div>
 									{/if}
@@ -1781,7 +1780,7 @@ function formatTime(ts: number) {
 	<!-- Image Detail Dialog -->
 	{#key detailImg.path}
 		<div
-			class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+			class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
 			onclick={() => { detailImg = null; }}
 			role="dialog"
 		>
