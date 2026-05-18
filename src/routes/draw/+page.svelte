@@ -135,9 +135,11 @@
 	// API error state
 	let apiErrorMessage = $state("");
 	let apiStatusValue = $state("checking");
+		let forkMessage = $state("");
 
 	$effect(() => {
 		const unsub = apiError.subscribe((v) => {
+				if (v) console.log('[FORK] apiError set to:', v);
 			apiErrorMessage = v || '';
 		});
 		return unsub;
@@ -169,7 +171,8 @@
 	// tab 变化时更新 URL hash
 	$effect(() => {
 		if (typeof location !== 'undefined' && activeTab) {
-			history.replaceState(null, '', '#' + activeTab);
+			console.log('[FORK] activeTab effect:', activeTab);
+				history.replaceState(null, '', '#' + activeTab);
 		}
 	});
 
@@ -195,11 +198,16 @@
 	});
 
 	$effect(() => {
-		const u1 = drawEnv.baseUrl.subscribe((v) => (currentBaseUrl = v));
+		console.log('[FORK] $effect (consumeFork) running');
+			const u1 = drawEnv.baseUrl.subscribe((v) => {
+				if (v !== currentBaseUrl) console.log('[FORK] baseUrl changed:', currentBaseUrl, '->', v);
+				currentBaseUrl = v;
+			});
 		authToken = forumAuth.getToken();
 
 		// 检查是否有待消费的 fork 数据（从其他页面跳转过来）
 		const res = consumeFork();
+			console.log('[FORK] $effect after consumeFork');
 		if (res) {
 					inlineWorkflow = res.workflow && Object.keys(res.workflow || {}).length ? res.workflow : null;
 				inlineWorkflowApi = res.workflow_api || null;
@@ -218,7 +226,8 @@
 				styleTags = '';
 				styleName = '';
 			}
-			activeTab = 'generate';
+			console.log('[FORK] $effect setting activeTab=generate');
+				activeTab = 'generate';
 		}
 
 		// Connect status WebSocket
@@ -273,10 +282,12 @@
 		}
 
 	async function handleFork(path: string) {
+		console.log('[FORK] handleFork called', path);
 		try {
 			const res = await forkOutputImage(path);
+			console.log('[FORK] API done', res);
 			inlineWorkflow = null;
-				inlineWorkflowApi = res.workflow_api || null;
+			inlineWorkflowApi = res.workflow_api || null;
 			if (res.builtin_prompt) directPrompt = res.builtin_prompt;
 			if (res.builtin_negative_prompt) negativePrompt = res.builtin_negative_prompt;
 			if (res.default_width) width = res.default_width;
@@ -284,7 +295,7 @@
 			forkSeed = res.seed;
 			if (res.workflow_path && res.workflow_path !== 'fork') workflowPath = res.workflow_path;
 			if (res.workflow_name) workflowName = res.workflow_name;
-				else workflowName = inlineWorkflow ? '(fork)' : '';
+			else workflowName = inlineWorkflow ? '(fork)' : '';
 			if (res.style_tags) {
 				styleTags = res.style_tags;
 				styleName = res.style_tags;
@@ -293,14 +304,14 @@
 				styleName = '';
 			}
 			localStorage.setItem('draw-fork-pending', JSON.stringify({ workflow_api: res.workflow_api || null, builtin_prompt: res.builtin_prompt || '', builtin_negative_prompt: res.builtin_negative_prompt || '', default_width: res.default_width || null, default_height: res.default_height || null, seed: res.seed, style_tags: res.style_tags || '', workflow_path: res.workflow_path || '', workflow_name: res.workflow_name || '' }));
-				apiError.set('Fork 成功');
+			forkMessage = 'Fork 成功';
+			console.log('[FORK] success done');
 		} catch (e: any) {
-			apiError.set(e?.message || 'Fork 失败');
+			console.log('[FORK] catch error:', e?.message);
+			forkMessage = e?.message || 'Fork 失败';
 		}
 	}
-
-
-	async function startGeneration() {
+async function startGeneration() {
 			if (queuing) return;
 			if (!authToken) {
 				alert('请先在论坛登录');
@@ -618,6 +629,13 @@
 			<AlertDescription class="text-xs">后端不可用，二叉树树目前可能需要使用电脑，未启用生图功能</AlertDescription>
 		</Alert>
 	{:else}
+		{#if forkMessage}
+			<Alert>
+				<Icon icon="mdi:information" class="size-4 shrink-0" />
+				<AlertDescription class="text-xs">{forkMessage}</AlertDescription>
+				<button class="ml-auto text-xs underline" onclick={() => (forkMessage = '')}>关闭</button>
+			</Alert>
+		{/if}
 	<Tabs bind:value={activeTab} class="w-full">
 		<TabsList class="w-full">
 			<TabsTrigger value="generate" class="flex-1">

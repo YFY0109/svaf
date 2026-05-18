@@ -57,10 +57,16 @@
 	}
 
 	function handleForkClick() {
+		console.log('[FORK] lightbox handleForkClick start');
 		const img = images[index];
 		if (!img) return;
 		const p = getPath(img.src);
-		if (p) onfork?.(p);
+		if (p) {
+				console.log('[FORK] lightbox calling onfork');
+				onfork?.(p);
+			}
+			console.log('[FORK] lightbox about to close');
+			onclose?.();
 		onclose?.();
 	}
 
