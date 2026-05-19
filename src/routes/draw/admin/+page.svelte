@@ -1153,26 +1153,26 @@ function formatTime(ts: number) {
 							</button>
 						</div>
 						<div class="p-3 space-y-3 text-xs">
-							<div class="grid grid-cols-2 gap-2">
+							<div class="flex flex-wrap gap-2">
 								<div>
 									<p class="text-[10px] text-muted-foreground mb-1">原图 1</p>
 									{#if detailImg.image1}
-										<img src="{currentBaseUrl}/api/uploads/{detailImg.image1}" alt="原图" class="w-full rounded border max-h-48 object-contain" loading="lazy" />
+										<img src="{currentBaseUrl}/api/uploads/{detailImg.image1}" alt="原图" class="rounded border max-h-48 w-auto h-auto" loading="lazy" />
 																			{/if}
 								</div>
 								<div>
 									<p class="text-[10px] text-muted-foreground mb-1">结果图</p>
-									<img src={getImageUrl(detailImg.path)} alt="结果" class="w-full rounded border max-h-48 object-contain" loading="lazy" />
+									<img src={getImageUrl(detailImg.path)} alt="结果" class="rounded border max-h-48 w-auto h-auto" loading="lazy" />
 								</div>
 							</div>
-							<div class="grid grid-cols-2 gap-2">
+							<div class="flex flex-wrap gap-2">
 								<div><span class="text-muted-foreground">生图者：</span>{detailImg.user_id || '?'}</div>
 								<div><span class="text-muted-foreground">时间：</span>{detailImg.mtime ? new Date(detailImg.mtime * 1000).toLocaleString() : '-'}</div>
 							</div>
 							{#if detailImg.image2}
 								<div>
 									<span class="text-muted-foreground">原图 2</span>
-									<img src="{currentBaseUrl}/api/uploads/{detailImg.image2}" alt="原图2" class="w-full rounded border max-h-48 object-contain" loading="lazy" />
+									<img src="{currentBaseUrl}/api/uploads/{detailImg.image2}" alt="原图2" class="rounded border max-h-48 w-auto h-auto" loading="lazy" />
 								</div>
 							{/if}
 							{#if detailImg.prompt}
