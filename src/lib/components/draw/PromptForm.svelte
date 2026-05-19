@@ -168,18 +168,18 @@
 				onExpired={() => (translateToken = '')}
 			/>
 
-			<Button size="sm" variant="outline" onclick={handleTranslate} disabled={translating || !nlPrompt?.trim()} class="mt-1.5">
+			<div class="flex flex-wrap gap-2 mt-1.5">
+			<Button size="sm" variant="outline" onclick={handleTranslate} disabled={translating || !nlPrompt?.trim()}>
 				<Icon icon={translating ? "mdi:loading" : "mdi:auto-fix"} class="size-4 mr-1 {translating ? 'animate-spin' : ''}" />
 				{translating ? "转换中..." : "转换"}
 			</Button>
-		{#if workflowPrompt && (directPrompt !== workflowPrompt || negativePrompt !== workflowNegativePrompt)}
-			<div class="flex gap-2 mt-1">
+			{#if workflowPrompt && (directPrompt !== workflowPrompt || negativePrompt !== workflowNegativePrompt)}
 				<Button size="sm" variant="outline" onclick={() => { directPrompt = workflowPrompt; negativePrompt = workflowNegativePrompt; llmPrompt = ''; hasTranslated = false; }}>
 					<Icon icon="mdi:restore" class="size-3.5 mr-1" />
 					重置到工作流默认
 				</Button>
-			</div>
-		{/if}
+			{/if}
+		</div>
 		{#if translateError}
 			<div class="text-xs text-red-500 mt-1">{translateError}</div>
 		{/if}
