@@ -161,9 +161,11 @@ let loadingMore = $state(false);
 	}
 
 	$effect(() => {
-		authToken = forumAuth.getToken();
+		const unsub = forumAuth.subscribe((s) => {
+			authToken = s.token;
+		});
 		const u = drawEnv.baseUrl.subscribe((v) => (currentBaseUrl = v));
-		return u;
+		return () => { unsub(); u(); };
 	});
 
 	function showMsg(type: 'success' | 'error', text: string) {
