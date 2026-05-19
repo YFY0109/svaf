@@ -95,7 +95,8 @@
 				body: JSON.stringify({
 					prompt: nlPrompt,
 					original_prompt: directPrompt || undefined,
-					negative_prompt: negativePrompt || undefined
+					negative_prompt: negativePrompt || undefined,
+					turnstile_token: translateToken || undefined
 				})
 			});
 			const reader = resp.body.getReader();
