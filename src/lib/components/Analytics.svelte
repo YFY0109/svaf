@@ -12,6 +12,7 @@
 		umami: false,
 		cloudflare: false,
 		cfUmami: false,
+			adsense: false,
 		baidu: false,
 		google: false,
 		clarity: false
@@ -46,6 +47,11 @@
 		if (!scriptsLoaded.cfUmami) {
 			loadCfUmami();
 			scriptsLoaded.cfUmami = true;
+		}
+
+		if (!scriptsLoaded.adsense) {
+			loadAdsense();
+			scriptsLoaded.adsense = true;
 		}
 
 		// 功能性追踪器
@@ -91,6 +97,14 @@
 		const script = document.createElement('script');
 		script.defer = true;
 		script.src = siteConfig.analytics.cfUmami.src;
+		document.head.appendChild(script);
+	}
+
+	function loadAdsense() {
+		const script = document.createElement('script');
+		script.async = true;
+		script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1683686345039700';
+		script.setAttribute('crossorigin', 'anonymous');
 		document.head.appendChild(script);
 	}
 
