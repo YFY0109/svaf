@@ -52,6 +52,7 @@ import ImageLightbox from '$lib/components/draw/ImageLightbox.svelte';
 	let recentOffset = $state(0);
 	let recentLimit = $state(50);
 	let selectedPaths = $state<Set<string>>(new Set());
+		let selectMode = $state(false);
 	let searchUserId = $state('');
 // Masonry layout
 let columnCount = $state(4);
@@ -1065,16 +1066,6 @@ function formatTime(ts: number) {
 							<Button variant="outline" size="sm" onclick={loadRecent} disabled={loading}>
 								<Icon icon="mdi:refresh" class="size-4 mr-1" />刷新
 							</Button>
-							{#if selectedPaths.size > 0}
-								<Button variant="default" size="sm" onclick={handleAddSelectedToFeatured} disabled={loading}>
-									<Icon icon="mdi:star" class="size-4 mr-1" />
-									加入精选 ({selectedPaths.size})
-								</Button>
-								<Button variant="destructive" size="sm" onclick={handleDeleteSelected} disabled={loading}>
-									<Icon icon="mdi:delete" class="size-4 mr-1" />
-									删除选中 ({selectedPaths.size})
-								</Button>
-							{/if}
 						</div>
 						<div class="flex gap-2">
 							<Input
@@ -1087,7 +1078,23 @@ function formatTime(ts: number) {
 						</div>
 					</CardContent>
 				</Card>
-				{#if recentImages.length > 0}
+				<div class="sticky top-0 z-10 bg-background py-2 flex flex-wrap gap-2 items-center border-b">
+							<Button variant={selectMode ? 'default' : 'outline'} size="sm" onclick={() => { selectMode = !selectMode; }}>
+								<Icon icon="mdi:select" class="size-4 mr-1" />
+								{selectMode ? '取消选择' : '选择'}
+							</Button>
+							{#if selectedPaths.size > 0}
+								<Button variant="default" size="sm" onclick={handleAddSelectedToFeatured} disabled={loading}>
+									<Icon icon="mdi:star" class="size-4 mr-1" />
+									加入精选 ({selectedPaths.size})
+								</Button>
+								<Button variant="destructive" size="sm" onclick={handleDeleteSelected} disabled={loading}>
+									<Icon icon="mdi:delete" class="size-4 mr-1" />
+									删除选中 ({selectedPaths.size})
+								</Button>
+							{/if}
+						</div>
+					{#if recentImages.length > 0}
 					<div class="flex gap-2 items-start">
 						{#each imgColumns as col, ci (ci)}
 							<div class="flex flex-1 flex-col gap-2 min-w-0">
@@ -1097,7 +1104,7 @@ function formatTime(ts: number) {
 										<div class="relative group">
 											<button
 												class="w-full rounded-md overflow-hidden border {selectedPaths.has(img.path) ? 'ring-2 ring-primary' : ''}"
-												onclick={() => openLb(img.path)}
+												onclick={() => { if (selectMode) toggleSelect(img.path); else openLb(img.path); }}
 											>
 												<img
 													src={getImageProxyUrl(img.path)}
@@ -1109,18 +1116,20 @@ function formatTime(ts: number) {
 													class="block w-full h-auto bg-muted"
 												/>
 											</button>
-											<div class="absolute top-1 left-1 flex gap-1 items-start">
-												<input
-													type="checkbox"
-													checked={selectedPaths.has(img.path)}
-													onchange={() => toggleSelect(img.path)}
-													onclick={(e) => e.stopPropagation()}
-													class="size-4 accent-primary opacity-60 group-hover:opacity-100 transition-opacity"
-												/>
+											{#if selectMode}
+										<div class="absolute top-1 left-1 flex gap-1 items-start">
+											<input
+												type="checkbox"
+												checked={selectedPaths.has(img.path)}
+												onchange={() => toggleSelect(img.path)}
+												onclick={(e) => e.stopPropagation()}
+												class="size-4 accent-primary opacity-60 group-hover:opacity-100 transition-opacity"
+											/>
+										</div>
+									{/if}
 												{#if img.deleted}
 													<span class="bg-red-600 text-white text-[9px] px-1 rounded font-bold">已删</span>
 												{/if}
-											</div>
 											<div class="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
 												<button
 													class="p-0.5 rounded bg-destructive/80 text-white hover:bg-destructive"
@@ -1651,7 +1660,7 @@ function formatTime(ts: number) {
 									<div class="flex flex-wrap gap-2">
 										<Badge variant="outline" class="text-xs">图片数: {debugData.meta_stats.output_total}</Badge>
 									</div>
-								</div>
+							</div>
 							{/if}
 
 							{#if debugData.queue_users.length > 0}
@@ -1664,7 +1673,7 @@ function formatTime(ts: number) {
 											</Badge>
 										{/each}
 									</div>
-								</div>
+							</div>
 							{/if}
 
 							{#if debugData.stuck.length > 0}
