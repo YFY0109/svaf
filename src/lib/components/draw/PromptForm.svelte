@@ -82,6 +82,8 @@
 	}
 				async function handleTranslate() {
 		if (!nlPrompt?.trim()) return;
+		translateToken = '';
+		translateTick++;
 		translating = true;
 		translateError = ''; hasTranslated = false;
 		promptsOpen = true;
@@ -136,9 +138,7 @@
 						llmPrompt = data.positive; hasTranslated = true;
 						directPrompt = data.positive;
 						negativePrompt = data.negative;
-							translateToken = '';
-							translateTick++;
-					} else if (ev === 'error') {
+												} else if (ev === 'error') {
 						translateError = '转换失败: ' + (data.message || '未知错误');
 					}
 				}
