@@ -132,7 +132,7 @@ let loadingMore = $state(false);
 	// Lightbox
 	let lbOpen = $state(false);
 	let lbImages = $state<{ src: string; creator_id?: string; cached?: string }[]>([]);
-	let recMasonryEl = <HTMLDivElement | undefined>(undefined);
+	let recMasonryEl = $state<HTMLDivElement | undefined>(undefined);
 	let recDialogItem = $state<any>(null);
 	let recDialogId = $derived(recDialogItem?.id ?? '');
 
