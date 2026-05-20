@@ -241,10 +241,10 @@ export async function fetchRecommendations() {
 	return drawRequest<{ items: DrawRecommendation[]; total: number }>('/api/draw/admin/recommendations');
 }
 
-export async function resolveRecommendation(recId: string, action: 'approve' | 'reject', reason?: string) {
+export async function resolveRecommendation(recId: string, action: 'approve' | 'reject', reason?: string, imagePath?: string) {
 	return drawRequest<{ ok: boolean; recommendation: DrawRecommendation }>('/api/draw/admin/recommendations/resolve', {
 		method: 'POST',
-		json: { rec_id: recId, action, reason: reason || '' }
+		json: { rec_id: recId, action, reason: reason || '', image_path: imagePath || '' }
 	});
 }
 

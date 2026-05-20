@@ -470,11 +470,11 @@ $effect(() => {
 		}
 	}
 
-	async function resolveRec(recId: string, action: 'approve' | 'reject') {
+	async function resolveRec(recId: string, action: 'approve' | 'reject', imagePath?: string) {
 		loading = true;
 		try {
 			const reason = recRejectReasons[recId] || undefined;
-			await admin.resolveRecommendation(recId, action, action === 'reject' ? reason : undefined);
+			await admin.resolveRecommendation(recId, action, action === 'reject' ? reason : undefined, imagePath);
 			showMsg('success', action === 'approve' ? '已通过' : '已拒绝');
 			recommendations = recommendations.filter((r) => r.id !== recId);
 			delete recRejectReasons[recId];
@@ -1359,13 +1359,13 @@ function formatTime(ts: number) {
 								<div class="text-xs text-muted-foreground mr-2">
 									UID: {recDialogItem.user_id ?? '?'} &nbsp; {recDialogItem.image_path}
 								</div>
-								<Button size="sm" variant="default" onclick={() => { resolveRec(recDialogItem.id, 'approve'); closeRecDialog(); }} disabled={loading}>
+								<Button size="sm" variant="default" onclick={() => { resolveRec(recDialogItem.id, 'approve', recDialogItem.image_path); closeRecDialog(); }} disabled={loading}>
 									通过
 								</Button>
 								<Input bind:value={recRejectReasons[recDialogId]}
 									placeholder="拒绝理由" class="h-8 text-xs w-40"
 								/>
-								<Button size="sm" variant="destructive" onclick={() => { resolveRec(recDialogItem.id, 'reject'); closeRecDialog(); }} disabled={loading}>
+								<Button size="sm" variant="destructive" onclick={() => { resolveRec(recDialogItem.id, 'reject', recDialogItem.image_path); closeRecDialog(); }} disabled={loading}>
 									拒绝
 								</Button>
 							</div>
