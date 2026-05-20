@@ -70,8 +70,7 @@
 	let editor: any = null;
 	let internalValue = value;
 	let keydownCleanup: (() => void) | null = null;
-	let compositionCleanup: (() => void) | null = null;
-	let composing = $state(false);
+	let captureCleanup: (() => void) | null = null;
 	let uploadStatus = $state('');
 	let uploading = $state(false);
 
@@ -203,10 +202,19 @@
 			});
 
 			editor.on('change', () => {
-				if (composing) return;
 				syncValue(editor?.getMarkdown() || '');
 				void updatePreviewClasses();
 			});
+
+			// Squire calls preventDefault on keydown during IME composition, breaking IME.
+			// Intercept keydown in capture phase and stop propagation so Squire never sees it.
+			const captureKeydown = (e: KeyboardEvent) => {
+				if (e.isComposing) {
+					e.stopPropagation();
+				}
+			};
+			containerEl.addEventListener('keydown', captureKeydown, { capture: true });
+			captureCleanup = () => containerEl?.removeEventListener('keydown', captureKeydown, { capture: true });
 
 			const keydownHandler = (event: KeyboardEvent) => {
 				if (event.isComposing) return;
@@ -221,20 +229,6 @@
 			containerEl.addEventListener('keydown', keydownHandler);
 			keydownCleanup = () => containerEl?.removeEventListener('keydown', keydownHandler);
 
-			const compositionStart = () => { composing = true; };
-			const compositionEnd = () => {
-				composing = false;
-				syncValue(editor?.getMarkdown() || '');
-				void updatePreviewClasses();
-			};
-
-			containerEl.addEventListener('compositionstart', compositionStart);
-			containerEl.addEventListener('compositionend', compositionEnd);
-			compositionCleanup = () => {
-				containerEl?.removeEventListener('compositionstart', compositionStart);
-				containerEl?.removeEventListener('compositionend', compositionEnd);
-			};
-
 			await updatePreviewClasses();
 			setDisabledState(disabled || submitting);
 		})();
@@ -245,9 +239,9 @@
 	});
 
 	onDestroy(() => {
+		captureCleanup?.();
 		keydownCleanup?.();
 		keydownCleanup = null;
-		compositionCleanup?.();
 		editor?.destroy();
 		editor = null;
 	});
