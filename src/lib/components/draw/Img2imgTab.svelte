@@ -251,6 +251,7 @@
 					turnstile_token: turnstileToken || undefined,
 			});
 			uploading = false;
+				turnstileTick++;
 			queueSuccess = '成功加入队列！等待生图中，前往"我的"页面查看详情。';
 		} catch (e) {
 			uploading = false;
