@@ -127,9 +127,8 @@
 		const poll = setInterval(() => {
 			const el = document.getElementById(id);
 			if (!el) return;
-			// 仅当元素不在视口内才滚动（避免 reload 时与浏览器原生 hash 定位冲突）
 			const rect = el.getBoundingClientRect();
-			if (rect.top < 0 || rect.top > window.innerHeight) {
+			if (rect.top < 56 || rect.top > window.innerHeight) {
 				el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 			clearInterval(poll);
@@ -217,7 +216,7 @@
 	<div
 		bind:this={proseEl}
 		class="prose prose-neutral dark:prose-invert max-w-none break-words [overflow-wrap:anywhere] mo-fade-in
-			prose-headings:text-foreground
+			prose-headings:text-foreground prose-headings:scroll-mt-14
 			prose-p:text-foreground
 			prose-strong:text-foreground
 			prose-a:text-primary prose-a:underline prose-a:underline-offset-4 prose-a:break-all prose-a:transition-opacity prose-a:hover:opacity-80
