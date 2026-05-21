@@ -111,11 +111,20 @@
 			await renderMermaidIn(proseEl);
 			highlightCodeBlocksIn(proseEl);
 
+			// 处理 hash 锚点跳转（内容可能延迟渲染，浏览器内置滚动在此时已失效）
+			const hash = $page.url.hash;
+			if (hash) {
+				const id = hash.slice(1);
+				const target = document.getElementById(id) || proseEl.querySelector(`[id="${id}"]`);
+				if (target) {
+					setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+				}
+			}
+
 			// 处理搜索高亮
 			const highlight = $page.url.searchParams.get('highlight');
 			if (highlight) {
 				highlightSearchTerms(proseEl, highlight);
-				// 延迟滚动，等高亮 DOM 更新
 				setTimeout(scrollToFirstMatch, 100);
 			}
 		})();
