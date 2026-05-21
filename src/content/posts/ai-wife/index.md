@@ -337,7 +337,8 @@ Enjoy txt2img！
 
 *这是一个提示词工程。模型的上限取决于你的指示*
 
-![](img/index-16.png)
+![](img/index-17.png)
+
 ![](img/index-14.png)
 
 Now, eojoy img2img!
