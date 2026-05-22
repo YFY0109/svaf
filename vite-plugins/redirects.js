@@ -24,7 +24,8 @@ const redirects = {
 	'/plan': 'https://acofork.notion.site/2e11e011d4e5800fa050e8f7cf448347',
 	'/iku': 'https://ikuuu.de/',
 	'/hnr': 'https://subspace.shop/products/lin-pianpian-keychain-the-weeping-swan-ten-days-of-the-citys-fall?_pos=1&_sid=5ba9d94dd&_ss=r',
-	'/bd': 'https://pan.baidu.com/s/5IumozyRtM1U66d41M0s9pg'
+	'/bd': 'https://pan.baidu.com/s/5IumozyRtM1U66d41M0s9pg',
+	'/addqq': 'https://www.ifdian.net/item/3e7b83a0559311f1b74e52540025c377'
 };
 
 function generateRedirectHTML(destination, path) {
