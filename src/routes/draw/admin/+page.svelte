@@ -1749,7 +1749,11 @@ function formatTime(ts: number) {
 										<AlertDescription class="text-xs">
 											{#if llmTestResult.ok}
 												<span class="font-medium text-green-600">✓ {llmTestResult.provider}</span> — {llmTestResult.reply}
-																							<span class="font-medium">✗ 失败</span> — {llmTestResult.error}
+												{#if llmTestResult.raw}
+													<br /><span class="text-[9px] text-muted-foreground">原始回复: {llmTestResult.raw}</span>
+												{/if}
+											{:else}
+												<span class="font-medium">✗ 失败</span> — {llmTestResult.error}
 												{#if llmTestResult.raw}
 													<br /><span class="text-[9px] text-muted-foreground">原始回复: {llmTestResult.raw}</span>
 												{/if}
