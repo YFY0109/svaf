@@ -89,7 +89,6 @@
 		translating = true;
 		translateError = ''; hasTranslated = false;
 		promptsOpen = true;
-		let accumulated = '';
 		llmPrompt = '';
 		const token = forumAuth.getToken();
 		try {
@@ -104,46 +103,13 @@
 					turnstile_token: translateToken || undefined
 				})
 			});
-			if (!resp.ok) {
-				const err = await resp.json().catch(() => ({}));
-				translateError = err.detail || err.error || err.message || '翻译请求失败';
-				translating = false;
-				return;
-			}
-			const reader = resp.body.getReader();
-			const decoder = new TextDecoder();
-			let buffer = '';
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
-				buffer += decoder.decode(value, { stream: true });
-				const nlIdx = buffer.indexOf('\n');
-				if (nlIdx === -1) break;
-				const line = buffer.slice(0, nlIdx).trim();
-				buffer = buffer.slice(nlIdx + 1);
-				if (line.startsWith('event: ')) {
-					const ev = line.slice(7).trim();
-					const nl2 = buffer.indexOf('\n');
-					if (nl2 === -1) break;
-					const dataLine = buffer.slice(0, nl2).trim();
-					buffer = buffer.slice(nl2 + 1);
-					if (!dataLine.startsWith('data: ')) continue;
-					const data = JSON.parse(dataLine.slice(6));
-					if (ev === 'chunk') {
-						accumulated += data.text;
-						// 实时解析 POSITIVE:/NEGATIVE: 并去掉前缀
-						const posM = accumulated.match(/POSITIVE:\s*(.+?)(?=\s*NEGATIVE:|\n|$)/s);
-						const negM = accumulated.match(/NEGATIVE:\s*(.+)$/s);
-						if (posM) directPrompt = posM[1].trim();
-						if (negM) negativePrompt = negM[1].trim();
-					} else if (ev === 'done') {
-						llmPrompt = data.positive; hasTranslated = true;
-						directPrompt = data.positive;
-						negativePrompt = data.negative;
-												} else if (ev === 'error') {
-						translateError = '转换失败: ' + (data.message || '未知错误');
-					}
-				}
+			const data = await resp.json();
+			if (data.ok) {
+				llmPrompt = data.positive; hasTranslated = true;
+				directPrompt = data.positive;
+				negativePrompt = data.negative || '';
+			} else {
+				translateError = data.error || '翻译失败';
 			}
 		} catch (e) {
 			translateError = '请求失败: ' + (e instanceof Error ? e.message : '未知错误');
