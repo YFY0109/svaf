@@ -95,6 +95,8 @@ let loadingMore = $state(false);
 
 	// Credits / Wallet
 	let wallets = $state<Array<{ user_id: number; balance: number; total_purchased: number; _edit?: number }>>([]);
+	let payUrlDisplay = 'https://www.ifdian.net/order/create?remark={用户ID}&product_type=1&plan_id=f2b6ebcc565411f195575254001e7c00&sku=[{...}]&viokrz_ex=0';
+
 	async function loadCredits() {
 		try {
 			const wr = await admin.getWallets();
@@ -1578,7 +1580,7 @@ function formatTime(ts: number) {
 						{/if}
 						<div class="border-t pt-3">
 							<p class="text-xs font-medium mb-2">充值链接模板</p>
-							<code class="block text-[10px] break-all bg-muted rounded p-2">https://www.ifdian.net/order/create?remark={用户ID}&product_type=1&plan_id=f2b6ebcc565411f195575254001e7c00&sku=[{...}]&viokrz_ex=0</code>
+                <code class="block text-[10px] break-all bg-muted rounded p-2">{payUrlDisplay}</code>
 							<p class="text-[10px] text-muted-foreground mt-1">remark 自动替换为当前用户论坛 ID</p>
 						</div>
 					</CardContent>
