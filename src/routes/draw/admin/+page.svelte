@@ -180,6 +180,8 @@ let loadingMore = $state(false);
 	let wfGrouped = $derived(() => {
 		const list = wfFiltered();
 		const cats = [...new Set(list.map(w => w.category))];
+		const sortCat = (c: string) => c === '' ? 0 : 1;
+		cats.sort((a, b) => sortCat(a) - sortCat(b));
 		return cats.map(cat => ({ category: cat, items: list.filter(w => w.category === cat) }));
 	});
 	let wfRenameValue = $state('');
