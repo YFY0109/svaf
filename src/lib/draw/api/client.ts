@@ -30,13 +30,20 @@ async function parseResponse<T>(response: Response): Promise<T> {
 	const body = isJson ? await response.json() : await response.text();
 
 	if (!response.ok) {
+		if (response.status === 401) {
+			forumAuth.clear();
+			if (typeof window !== 'undefined') {
+				const loginUrl = '/forum/auth/login/?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+				window.location.href = loginUrl;
+			}
+		}
 		const payload = (
 			typeof body === 'object' && body
 				? body
 				: { message: typeof body === 'string' ? body : undefined }
 		) as DrawApiErrorPayload;
 		if (payload.code === 'USER_BANNED') apiError.set(payload.detail || '账号已被封禁');
-			throw new DrawApiError(response.status, payload);
+		throw new DrawApiError(response.status, payload);
 	}
 	return body as T;
 }
