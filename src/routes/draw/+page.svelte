@@ -36,7 +36,7 @@
 	let rechargeOpen = $state(false);
 	let recharging = $state(false);
 	let plans = $state<Array<{ id: string; name: string; url: string; points: number }>>([]);
-	let pointsConfig = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number } | null>(null);
+	let pointsConfig = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number; text_to_image_anima: number } | null>(null);
 	let walletTimer: ReturnType<typeof setInterval> | null = null;
 	let queuing = $state(false);
 	let queueSuccess = $state("");
@@ -170,6 +170,7 @@
 	// Tab state
 	let activeTab = $state(location.hash?.slice(1) || 'generate');
 	let genSubTab = $state(location.hash?.includes('img2img') ? 'img2img' : 'txt2img');
+	let genTxtSubTab = $state('wai');
 
 	// 从 URL hash 恢复 tab 状态
 	$effect(() => {
@@ -337,7 +338,7 @@
 			forkMessage = e?.message || 'Fork 失败';
 		}
 	}
-async function startGeneration() {
+async function startGeneration(mode = 'wai') {
 			if (queuing) return;
 			if (!authToken) {
 				alert('请先在论坛登录');
@@ -363,12 +364,13 @@ async function startGeneration() {
 					direct_prompt: finalDirectPrompt,
 					width: width || undefined,
 					height: height || undefined,
-					style_tags: styleTags || undefined,
+					style_tags: mode === 'wai' ? (styleTags || undefined) : undefined,
 					negative_prompt: negativePrompt || undefined,
 					seed: sameSeed ? forkSeed : undefined,
 					workflow_path: workflowPath,
 					inline_workflow: inlineWorkflow || undefined,
 					inline_workflow_api: inlineWorkflowApi || undefined,
+					mode,
 				turnstile_token: turnstileToken || undefined,
 				});
 				queueSuccess = '成功加入队列！等待生图中，前往"我的"页面查看详情。';
@@ -736,29 +738,40 @@ async function startGeneration() {
 				</TabsList>
 
 				<TabsContent value="txt2img" class="space-y-4 mt-4">
-					<div class="grid grid-cols-2 gap-4">
-						<WorkflowDialog bind:value={workflowPath} onselect={handleWorkflowSelect} onpromptload={handlePromptLoad} />
-						<StyleDialog bind:value={styleTags} bind:name={styleName} onselect={handleStyleSelect} />
-					</div>
+					<Tabs bind:value={genTxtSubTab} class="w-full">
+						<TabsList class="w-full">
+							<TabsTrigger value="wai" class="flex-1 text-xs">WAI</TabsTrigger>
+							<TabsTrigger value="anima" class="flex-1 text-xs">Anima</TabsTrigger>
+						</TabsList>
 
-					<PromptForm
-						bind:turnstileToken
-						bind:turnstileTick
-						bind:directPrompt
-						bind:negativePrompt
-						bind:nlPrompt
-						bind:workflowPrompt
-						bind:workflowNegativePrompt
-						bind:width
-						bind:height
-						onsubmit={startGeneration}
-						disabled={queuing || !isLoggedIn}
-						busy={queuing}
-						bind:sameSeed
-						bind:forkSeed
-						pointsCostTranslate={pointsConfig?.llm_translate ?? 0}
-						pointsCostSubmit={pointsConfig?.text_to_image ?? 0}
-					/>
+						<TabsContent value="wai" class="space-y-4 mt-4">
+							<div class="grid grid-cols-2 gap-4">
+								<WorkflowDialog bind:value={workflowPath} onselect={handleWorkflowSelect} onpromptload={handlePromptLoad} />
+								<StyleDialog bind:value={styleTags} bind:name={styleName} onselect={handleStyleSelect} />
+							</div>
+							<PromptForm
+								bind:turnstileToken bind:turnstileTick bind:directPrompt bind:negativePrompt bind:nlPrompt
+								bind:workflowPrompt bind:workflowNegativePrompt bind:width bind:height
+								onsubmit={() => startGeneration('wai')} disabled={queuing || !isLoggedIn} busy={queuing}
+								bind:sameSeed bind:forkSeed
+								pointsCostTranslate={pointsConfig?.llm_translate ?? 0}
+								pointsCostSubmit={pointsConfig?.text_to_image ?? 0}
+							/>
+						</TabsContent>
+
+						<TabsContent value="anima" class="space-y-4 mt-4">
+							<WorkflowDialog bind:value={workflowPath} onselect={handleWorkflowSelect} onpromptload={handlePromptLoad} subdir="ANIMA" />
+							<PromptForm
+								bind:turnstileToken bind:turnstileTick bind:directPrompt bind:negativePrompt bind:nlPrompt
+								bind:workflowPrompt bind:workflowNegativePrompt bind:width bind:height
+								onsubmit={() => startGeneration('anima')} disabled={queuing || !isLoggedIn} busy={queuing}
+								bind:sameSeed bind:forkSeed
+								pointsCostTranslate={pointsConfig?.llm_translate ?? 0}
+								pointsCostSubmit={pointsConfig?.text_to_image_anima ?? 20}
+								llmMode="anima"
+							/>
+						</TabsContent>
+					</Tabs>
 
 					{#if queueSuccess}
 						<Alert>

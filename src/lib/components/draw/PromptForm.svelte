@@ -32,6 +32,7 @@
 			turnstileTick = $bindable(0),
 		pointsCostTranslate = 0,
 		pointsCostSubmit = 0,
+		llmMode = '',
 	}: {
 		directPrompt?: string;
 		negativePrompt?: string;
@@ -51,7 +52,10 @@
 		forkSeed?: number;
 		pointsCostTranslate?: number;
 		pointsCostSubmit?: number;
-	} = $props();
+		llmMode?: string;
+	};
+
+	// llmMode is destructured from the second group already
 
 	let resolutions = $state<DrawResolution[]>([]);
 	let selectedRes = $derived(width && height ? `${width}x${height}` : '');
@@ -100,14 +104,21 @@
 					prompt: nlPrompt,
 					original_prompt: directPrompt || undefined,
 					negative_prompt: negativePrompt || undefined,
-					turnstile_token: translateToken || undefined
+					turnstile_token: translateToken || undefined,
+					mode: llmMode || undefined
 				})
 			});
 			const data = await resp.json();
 			if (data.ok) {
 				llmPrompt = data.positive; hasTranslated = true;
-				directPrompt = data.positive;
-				negativePrompt = data.negative || '';
+				if (llmMode === 'anima') {
+					// Anima: append translated text to existing prompt
+					const existing = directPrompt || workflowPrompt || '';
+					directPrompt = existing ? existing + ', ' + data.positive : data.positive;
+				} else {
+					directPrompt = data.positive;
+					negativePrompt = data.negative || '';
+				}
 			} else {
 				translateError = data.error || '翻译失败';
 			}

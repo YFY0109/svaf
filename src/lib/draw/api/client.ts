@@ -246,7 +246,7 @@ export async function fetchPlans() {
 }
 
 export async function fetchPointsConfig() {
-	return fetchPublic<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number }>('/api/wallet/points-config');
+	return fetchPublic<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number; text_to_image_anima: number }>('/api/wallet/points-config');
 }
 
 function _appendToken(url: URL): string {

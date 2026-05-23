@@ -97,7 +97,7 @@ let loadingMore = $state(false);
 	// Credits / Wallet
 	let wallets = $state<Array<{ user_id: number; balance: number; total_purchased: number; _edit?: number }>>([]);
 	let adminPlans = $state<Array<{ id: string; name: string; points: number; url: string }>>([]);
-	let pointsCfg = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number }>({ text_to_image: 10, image_to_image: 100, llm_translate: 1, signup_bonus: 0 });
+	let pointsCfg = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number; text_to_image_anima: number }>({ text_to_image: 10, image_to_image: 100, llm_translate: 1, signup_bonus: 0, text_to_image_anima: 20 });
 	let givePointsValue = $state(0);
 	let givePointsTarget = $state('');
 	let givePointsUid = $state(0);
@@ -1587,6 +1587,7 @@ function formatTime(ts: number) {
 							<label class="flex items-center gap-1">文生图 <input type="number" bind:value={pointsCfg.text_to_image} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
 							<label class="flex items-center gap-1">图生图 <input type="number" bind:value={pointsCfg.image_to_image} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
 							<label class="flex items-center gap-1">翻译 <input type="number" bind:value={pointsCfg.llm_translate} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
+							<label class="flex items-center gap-1">Anima <input type="number" bind:value={pointsCfg.text_to_image_anima} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
 							<label class="flex items-center gap-1">注册赠送 <input type="number" bind:value={pointsCfg.signup_bonus} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
 							<Button size="sm" variant="outline" class="h-7 text-xs" onclick={() => admin.savePointsConfig(pointsCfg).then(loadCredits)}>保存点数</Button>
 						</div>
