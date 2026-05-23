@@ -170,6 +170,7 @@ let loadingMore = $state(false);
 	let workflows = $state<{ path: string; name: string; thumbnail: boolean; category: string }[]>([]);
 	let wfSearch = $state('');
 	let wfRenaming = $state('');
+	let wfUploading = $state<Record<string, number>>({});
 
 	let wfFiltered = $derived(() => {
 		if (!wfSearch.trim()) return workflows;
@@ -957,20 +958,41 @@ $effect(() => {
 		}
 	}
 
-	async function handleWfThumbnailUpload(e: Event, wf: string) {
+	function handleWfThumbnailUpload(e: Event, wf: string) {
 		const file = (e.target as HTMLInputElement).files?.[0];
 		if (!file) return;
-		loading = true;
-		try {
-			const res = await admin.uploadWfThumbnail(file);
-			await admin.saveWorkflowMetaSingle(wf, { thumbnail: res.filename || '' });
-			loadWorkflowsAll();
-			showMsg('success', '缩略图已上传并关联');
-		} catch (e) {
-			showMsg('error', e instanceof Error ? e.message : '上传失败');
-		} finally {
-			loading = false;
-		}
+		const form = new FormData();
+		form.append('file', file);
+		wfUploading = { ...wfUploading, [wf]: 0 };
+		const baseUrl = get(drawEnv.baseUrl);
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', `${baseUrl}/api/draw/admin/wf_thumbnail`);
+		xhr.upload.onprogress = (ev) => {
+			if (ev.lengthComputable) {
+				const pct = Math.round((ev.loaded / ev.total) * 100);
+				wfUploading = { ...wfUploading, [wf]: pct };
+			}
+		};
+		xhr.onload = async () => {
+			if (xhr.status === 200) {
+				try {
+					const res = JSON.parse(xhr.responseText);
+					await admin.saveWorkflowMetaSingle(wf, { thumbnail: res.filename || '' });
+					loadWorkflowsAll();
+					showMsg('success', '缩略图已上传并关联');
+				} catch {}
+			} else {
+				showMsg('error', '上传失败');
+			}
+			wfUploading = { ...wfUploading };
+			delete wfUploading[wf];
+		};
+		xhr.onerror = () => {
+			showMsg('error', '上传失败');
+			wfUploading = { ...wfUploading };
+			delete wfUploading[wf];
+		};
+		xhr.send(form);
 	}
 
 	// Tab change triggers data loading
@@ -2174,6 +2196,11 @@ function formatTime(ts: number) {
 													<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 														<Icon icon="mdi:upload" class="size-4 text-white" />
 													</div>
+													{#if wfUploading[wf.path] !== undefined}
+														<div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+															<span class="text-xs font-bold text-white">{wfUploading[wf.path]}%</span>
+														</div>
+													{/if}
 												</button>
 												<input type="file" accept="image/*" class="hidden" id="wf-thumb-{wf.path}" onchange={(e) => handleWfThumbnailUpload(e, wf.path)} />
 												{#if wfRenaming === wf.path}
