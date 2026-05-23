@@ -13,6 +13,15 @@
 	import { consumeFork } from '$lib/draw/stores/fork';
 	import { onMount, onDestroy } from 'svelte';
 	import type { WsStatusEvent, DrawWorkflow, DrawRecommendation } from '$lib/draw/types';
+	import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '$lib/components/ui/dialog';
+
+	const ANNOUNCEMENT_TEXT = '由于压力过大，我们正在考虑收费方式，您可以前往 https://wj.qq.com/s2/26779091/f0ae/ 投出宝贵的一票。';
+
+	let announcementOpen = $state(false);
+
+	function closeAnnouncement() {
+		announcementOpen = false;
+	}
 
 	import PageViews from '$lib/components/PageViews.svelte';
 
@@ -520,6 +529,9 @@ async function startGeneration() {
 			io.observe(sentinelEl);
 		}
 		window.addEventListener('resize', handleResize, { passive: true });
+		if (ANNOUNCEMENT_TEXT && typeof sessionStorage !== 'undefined' && !sessionStorage.getItem('draw-announcement-dismissed')) {
+			announcementOpen = true;
+		}
 	});
 
 	onDestroy(() => {
@@ -925,6 +937,15 @@ async function startGeneration() {
 	onrecommend={handleRecommend}
 />
 </div>
+
+<Dialog open={announcementOpen} onOpenChange={(o) => { if (!o) { announcementOpen = false; try { sessionStorage.setItem('draw-announcement-dismissed', '1'); } catch {} } }}>
+	<DialogContent class="max-w-md">
+		<DialogHeader>
+			<DialogTitle>📢 公告</DialogTitle>
+			<DialogDescription class="text-sm leading-relaxed">{ANNOUNCEMENT_TEXT}</DialogDescription>
+		</DialogHeader>
+	</DialogContent>
+</Dialog>
 
 
 
