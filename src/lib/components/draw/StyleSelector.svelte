@@ -85,7 +85,7 @@
 				<div class="flex flex-wrap gap-1.5">
 					{#each sortedStyles() as s (s.tags)}
 						<button
-							class="inline-flex flex-col items-center gap-1 p-1.5 rounded-md border text-center text-xs transition-all hover:bg-accent {value === s.tags ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'border-border'}"
+							class="inline-flex flex-col items-center gap-1.5 p-2 rounded-md border text-center text-xs transition-all hover:bg-accent {value === s.tags ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'border-border'}"
 							onclick={() => toggleStyle(s)}
 							title={s.tags}
 						>
@@ -93,12 +93,12 @@
 								<img
 									src="{baseUrl}{s.thumbnail_url}"
 									alt=""
-									class="size-10 rounded object-cover shrink-0"
+									class="size-20 rounded object-cover shrink-0"
 									loading="lazy"
 								/>
 							{:else}
-								<div class="size-10 rounded bg-muted flex items-center justify-center shrink-0">
-									<Icon icon="mdi:palette-outline" class="size-5 text-muted-foreground" />
+								<div class="size-20 rounded bg-muted flex items-center justify-center shrink-0">
+									<Icon icon="mdi:palette-outline" class="size-8 text-muted-foreground" />
 								</div>
 							{/if}
 							<span class="truncate">{s.name || s.tags}</span>
