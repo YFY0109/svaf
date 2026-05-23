@@ -198,10 +198,11 @@ export async function getWorkflowMeta() {
 	}
 
 	export async function saveWorkflowMetaSingle(path: string, fields: { thumbnail?: string; category?: string; lora_link?: string }) {
+		const fullPath = path.startsWith('WAI/') ? path : 'WAI/' + path;
 		const cur = await getWorkflowMeta();
-		const meta = cur.workflow_meta.filter(m => m.workflow !== path);
-		const existing = cur.workflow_meta.find(m => m.workflow === path);
-		meta.push({ workflow: path, ...existing, ...fields });
+		const meta = cur.workflow_meta.filter(m => m.workflow !== fullPath);
+		const existing = cur.workflow_meta.find(m => m.workflow === fullPath);
+		meta.push({ workflow: fullPath, ...existing, ...fields });
 		return updateWorkflowMeta(meta);
 	}
 
