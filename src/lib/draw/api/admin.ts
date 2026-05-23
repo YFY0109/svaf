@@ -190,12 +190,20 @@ export async function getWorkflowMeta() {
 	return drawRequest<{ workflow_meta: { workflow: string; thumbnail?: string; lora_link?: string; category?: string }[] }>('/api/draw/admin/workflow_meta');
 }
 
-export async function updateWorkflowMeta(meta: { workflow: string; thumbnail?: string; lora_link?: string; category?: string }[]) {
-	return drawRequest<{ ok: boolean; workflow_meta: { workflow: string; thumbnail?: string; lora_link?: string; category?: string }[] }>('/api/draw/admin/workflow_meta', {
-		method: 'POST',
-		json: { workflow_meta: meta }
-	});
-}
+	export async function updateWorkflowMeta(meta: { workflow: string; thumbnail?: string; lora_link?: string; category?: string }[]) {
+		return drawRequest<{ ok: boolean; workflow_meta: { workflow: string; thumbnail?: string; lora_link?: string; category?: string }[] }>('/api/draw/admin/workflow_meta', {
+			method: 'POST',
+			json: { workflow_meta: meta }
+		});
+	}
+
+	export async function saveWorkflowMetaSingle(path: string, fields: { thumbnail?: string; category?: string; lora_link?: string }) {
+		const cur = await getWorkflowMeta();
+		const meta = cur.workflow_meta.filter(m => m.workflow !== path);
+		const existing = cur.workflow_meta.find(m => m.workflow === path);
+		meta.push({ workflow: path, ...existing, ...fields });
+		return updateWorkflowMeta(meta);
+	}
 
 export async function uploadWfThumbnail(file: File) {
 	const form = new FormData();

@@ -14,7 +14,7 @@
 	import { drawEnv } from '$lib/draw/stores/env';
 	import { get } from 'svelte/store';
 	import * as admin from '$lib/draw/api/admin';
-	import { getImageProxyUrl, getImageUrl, getThumbnailUrl, forkOutputImage, clearQueue, fetchDebugInfo } from '$lib/draw/api/client';
+	import { getImageProxyUrl, getImageUrl, getThumbnailUrl, forkOutputImage, clearQueue, fetchDebugInfo, fetchWorkflows } from '$lib/draw/api/client';
 	import { pendingFork } from '$lib/draw/stores/fork';
 import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -167,17 +167,15 @@ let loadingMore = $state(false);
 	let styleRenameTags = $state('');
 
 	// Workflows
-	let workflowFiles = $state<string[]>([]);
-	let workflowMeta = $state<{ workflow: string; thumbnail?: string; lora_link?: string; category?: string }[]>([]);
+	let workflows = $state<{ path: string; name: string; thumbnail: boolean; category: string }[]>([]);
 	let wfRenaming = $state('');
 	let wfRenameValue = $state('');
 	let wfMetaEditWf = $state('');
 	let wfMetaEditCat = $state('');
 	let wfMetaEditLora = $state('');
 	let wfMetaEditLoraLink = $state('');
-	let wfUploadTarget = $state('');
 
-	// Lightbox
+	// Image Lightbox
 	let lbOpen = $state(false);
 	let lbImages = $state<{ src: string; creator_id?: string; cached?: string }[]>([]);
 	let recMasonryEl = $state<HTMLDivElement | undefined>(undefined);
@@ -886,33 +884,8 @@ $effect(() => {
 
 	// --- Workflows ---
 
-	function getWfMeta(wf: string) {
-		return workflowMeta.find((m) => m.workflow === wf);
-	}
-
-	async function loadWorkflowFiles() {
-		try {
-			const res = await admin.getWorkflowFiles();
-			workflowFiles = res.files || [];
-		} catch (e) {
-			showMsg('error', e instanceof Error ? e.message : '加载工作流文件失败');
-			workflowFiles = [];
-		}
-	}
-
-	async function loadWorkflowMeta() {
-		try {
-			const res = await admin.getWorkflowMeta();
-			workflowMeta = res.workflow_meta || [];
-		} catch (e) {
-			showMsg('error', e instanceof Error ? e.message : '加载工作流元数据失败');
-			workflowMeta = [];
-		}
-	}
-
 	function loadWorkflowsAll() {
-		loadWorkflowFiles();
-		loadWorkflowMeta();
+		fetchWorkflows().then(res => { workflows = res.workflows || []; }).catch(() => showMsg('error', '加载工作流失败'));
 	}
 
 	function startWfRename(wf: string) {
@@ -944,27 +917,23 @@ $effect(() => {
 		}
 	}
 
+	function findWf(path: string) { return workflows.find(w => w.path === path); }
+
 	function editWfMeta(wf: string) {
 		wfMetaEditWf = wf;
-		const existing = getWfMeta(wf);
+		const existing = findWf(wf);
 		wfMetaEditCat = existing?.category || '';
-		wfMetaEditLora = existing?.lora_link || '';
+		wfMetaEditLora = '';
 	}
 
 	async function saveWfMeta() {
 		if (!wfMetaEditWf) return;
-		const updated = workflowMeta.filter((m) => m.workflow !== wfMetaEditWf);
-		const entry: { workflow: string; category?: string; lora_link?: string; thumbnail?: string } = { workflow: wfMetaEditWf };
-		if (wfMetaEditCat) entry.category = wfMetaEditCat;
-		if (wfMetaEditLora) entry.lora_link = wfMetaEditLora;
-		const existing = getWfMeta(wfMetaEditWf);
-		if (existing?.thumbnail) entry.thumbnail = existing.thumbnail;
-		updated.push(entry);
+		const wfPath = wfMetaEditWf;
 		loading = true;
 		try {
-			const res = await admin.updateWorkflowMeta(updated);
-			workflowMeta = res.workflow_meta;
+			await admin.saveWorkflowMetaSingle(wfPath, { category: wfMetaEditCat || undefined, lora_link: wfMetaEditLora || undefined });
 			wfMetaEditWf = '';
+			loadWorkflowsAll();
 			showMsg('success', '元数据已保存');
 		} catch (e) {
 			showMsg('error', e instanceof Error ? e.message : '保存失败');
@@ -979,24 +948,13 @@ $effect(() => {
 		loading = true;
 		try {
 			const res = await admin.uploadWfThumbnail(file);
-			// Auto-update meta with new thumbnail filename
-			const base = wf.split('/').pop()?.replace('.json', '') || '';
-			const updated = workflowMeta.filter((m) => m.workflow !== wf);
-			const existing = getWfMeta(wf);
-			updated.push({
-				workflow: wf,
-				thumbnail: res.filename || base,
-				category: existing?.category || '',
-				lora_link: existing?.lora_link || ''
-			});
-			const metaRes = await admin.updateWorkflowMeta(updated);
-			workflowMeta = metaRes.workflow_meta;
+			await admin.saveWorkflowMetaSingle(wf, { thumbnail: res.filename || '' });
+			loadWorkflowsAll();
 			showMsg('success', '缩略图已上传并关联');
 		} catch (e) {
 			showMsg('error', e instanceof Error ? e.message : '上传失败');
 		} finally {
 			loading = false;
-			wfUploadTarget = '';
 		}
 	}
 
@@ -2142,7 +2100,7 @@ function formatTime(ts: number) {
 					<CardHeader>
 						<CardTitle class="text-base flex items-center gap-2">
 							工作流管理
-							<Badge variant="secondary">{workflowFiles.length}</Badge>
+							<Badge variant="secondary">{workflows.length}</Badge>
 						</CardTitle>
 						<CardDescription>点击缩略图上传图片，双击名称重命名</CardDescription>
 					</CardHeader>
@@ -2179,61 +2137,44 @@ function formatTime(ts: number) {
 						{/if}
 
 						<!-- Workflow grid -->
-						{#if workflowFiles.length > 0}
+						{#if workflows.length > 0}
 							<div class="flex flex-wrap gap-2">
-								{#each workflowFiles as wf}
-									{@const meta = getWfMeta(wf)}
+								{#each workflows as wf (wf.path)}
 									<div class="inline-flex flex-col items-center gap-1 p-1.5 rounded-md border border-border hover:bg-accent transition-all group">
-										<!-- Thumbnail: click to upload -->
 										<button
 											class="relative size-12 rounded overflow-hidden shrink-0 bg-muted flex items-center justify-center cursor-pointer"
-											onclick={() => { document.getElementById(`wf-thumb-${wf}`)?.click(); }}
+											onclick={() => { document.getElementById(`wf-thumb-${wf.path}`)?.click(); }}
 											title="点击上传缩略图"
 										>
-											{#if meta?.thumbnail}
-												<img
-													src={getThumbnailUrl(wf)}
-													alt=""
-													class="w-full h-full object-cover"
-													loading="lazy"
-												/>
-																							<Icon icon="mdi:image-plus-outline" class="size-5 text-muted-foreground" />
+											{#if wf.thumbnail}
+												<img src={getThumbnailUrl(wf.path)} alt="" class="w-full h-full object-cover" loading="lazy" />
+											{:else}
+												<Icon icon="mdi:image-plus-outline" class="size-5 text-muted-foreground" />
 											{/if}
 											<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 												<Icon icon="mdi:upload" class="size-4 text-white" />
 											</div>
 										</button>
-										<!-- Hidden file input per workflow -->
-										<input
-											type="file"
-											accept="image/*"
-											class="hidden"
-											id="wf-thumb-{wf}"
-											onchange={(e) => handleWfThumbnailUpload(e, wf)}
-										/>
+										<input type="file" accept="image/*" class="hidden" id="wf-thumb-{wf.path}" onchange={(e) => handleWfThumbnailUpload(e, wf.path)} />
 
-										<!-- Name: double-click to rename -->
-										{#if wfRenaming === wf}
-											<input
-												type="text"
-												class="w-24 text-xs text-center border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+										{#if wfRenaming === wf.path}
+											<input type="text" class="w-24 text-xs text-center border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
 												bind:value={wfRenameValue}
 												onkeydown={(e) => { if (e.key === 'Enter') commitWfRename(); if (e.key === 'Escape') wfRenaming = ''; }}
 												onblur={commitWfRename}
 											/>
-																					<span
-												class="text-xs text-center truncate max-w-24 cursor-default"
+										{:else}
+											<span class="text-xs text-center truncate max-w-24 cursor-default"
 												title="双击重命名 | 右键编辑元数据"
-												ondblclick={() => startWfRename(wf)}
-												oncontextmenu={(e) => { e.preventDefault(); editWfMeta(wf); }}
-											>
-												{wf.split('/').pop()?.replace('.json', '') || ''}
-											</span>
+												ondblclick={() => startWfRename(wf.path)}
+												oncontextmenu={(e) => { e.preventDefault(); editWfMeta(wf.path); }}
+											>{wf.name}</span>
 										{/if}
 									</div>
 								{/each}
 							</div>
-													<div class="text-sm text-muted-foreground py-4 text-center">无工作流</div>
+						{:else}
+							<div class="text-sm text-muted-foreground py-4 text-center">无工作流</div>
 						{/if}
 					</CardContent>
 				</Card>
