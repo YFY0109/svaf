@@ -814,7 +814,8 @@ async function startGeneration(mode = 'wai') {
 							请先<a href="/forum/auth/login?redirect=/draw/" class="underline font-medium">登录论坛</a>查看自己的图片。
 						</AlertDescription>
 					</Alert>
-				{:else}
+				{/if}
+				{#if isLoggedIn}
 					<div class="space-y-3">
 						<!-- 队列状态 -->
 						<div class="space-y-2">
