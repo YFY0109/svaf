@@ -308,8 +308,8 @@
 							{#each presets.filter(p => p.type === 'positive') as p}
 								<div class="flex items-center gap-0.5 group">
 									<button onclick={() => applyPreset(p)} class="text-left text-[11px] px-2 py-1 rounded border border-border hover:bg-accent hover:border-primary/50 transition-all whitespace-nowrap">{p.name}</button>
-									<button onclick={() => openEditPreset(p)} class="size-4 flex items-center justify-center rounded text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" title="编辑"><Icon icon="mdi:pencil" class="size-2.5" /></button>
-									<button onclick={() => handleDeletePreset(p.id)} class="size-4 flex items-center justify-center rounded text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" title="删除"><Icon icon="mdi:close" class="size-2.5" /></button>
+									<button onclick={() => openEditPreset(p)} class="size-5 flex items-center justify-center rounded text-muted-foreground hover:text-primary opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0" title="编辑"><Icon icon="mdi:pencil" class="size-3" /></button>
+									<button onclick={() => handleDeletePreset(p.id)} class="size-5 flex items-center justify-center rounded text-muted-foreground hover:text-red-500 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0" title="删除"><Icon icon="mdi:close" class="size-3" /></button>
 								</div>
 							{/each}
 							{#if presets.filter(p => p.type === 'positive').length === 0}
@@ -328,8 +328,8 @@
 							{#each presets.filter(p => p.type === 'negative') as p}
 								<div class="flex items-center gap-0.5 group">
 									<button onclick={() => applyPreset(p)} class="text-left text-[11px] px-2 py-1 rounded border border-border hover:bg-accent hover:border-red-300/50 transition-all whitespace-nowrap">{p.name}</button>
-									<button onclick={() => openEditPreset(p)} class="size-4 flex items-center justify-center rounded text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" title="编辑"><Icon icon="mdi:pencil" class="size-2.5" /></button>
-									<button onclick={() => handleDeletePreset(p.id)} class="size-4 flex items-center justify-center rounded text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" title="删除"><Icon icon="mdi:close" class="size-2.5" /></button>
+									<button onclick={() => openEditPreset(p)} class="size-5 flex items-center justify-center rounded text-muted-foreground hover:text-primary opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0" title="编辑"><Icon icon="mdi:pencil" class="size-3" /></button>
+									<button onclick={() => handleDeletePreset(p.id)} class="size-5 flex items-center justify-center rounded text-muted-foreground hover:text-red-500 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0" title="删除"><Icon icon="mdi:close" class="size-3" /></button>
 								</div>
 							{/each}
 							{#if presets.filter(p => p.type === 'negative').length === 0}
