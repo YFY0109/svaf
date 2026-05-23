@@ -227,8 +227,15 @@ export async function fetchWalletBalance() {
 	return drawRequest<{ balance: number; total_purchased: number }>('/api/wallet/balance');
 }
 
-export async function createWalletOrder() {
-	return drawRequest<{ pay_url: string; order_id: string }>('/api/wallet/create-order', { method: 'POST' });
+export async function createWalletOrder(payUrl?: string) {
+	return drawRequest<{ pay_url: string; order_id: string }>('/api/wallet/create-order', {
+		method: 'POST',
+		json: { pay_url: payUrl || '' }
+	});
+}
+
+export async function fetchPlans() {
+	return drawRequest<{ items: Array<{ id: string; name: string; url: string; points: number }> }>('/api/wallet/plans');
 }
 
 export async function fetchPointsConfig() {

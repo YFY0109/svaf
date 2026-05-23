@@ -9,7 +9,7 @@
 	import { forumAuth } from '$lib/forum/stores/auth';
 	import { drawEnv, apiError, apiStatus, resolveApiRedirect } from '$lib/draw/stores/env';
 	import { connectStatusWs } from '$lib/draw/api/ws';
-	import { fetchMyImages, getImageUrl, getImageProxyUrl, forkOutputImage, recommendImage, deleteMyImage, fetchMyRecommendations, addToQueue, fetchMyQueue, fetchWalletBalance, createWalletOrder } from '$lib/draw/api/client';
+	import { fetchMyImages, getImageUrl, getImageProxyUrl, forkOutputImage, recommendImage, deleteMyImage, fetchMyRecommendations, addToQueue, fetchMyQueue, fetchWalletBalance, createWalletOrder, fetchPlans } from '$lib/draw/api/client';
 	import { consumeFork } from '$lib/draw/stores/fork';
 	import { onMount, onDestroy } from 'svelte';
 	import type { WsStatusEvent, DrawWorkflow, DrawRecommendation } from '$lib/draw/types';
@@ -35,6 +35,7 @@
 	let walletLoading = $state(false);
 	let rechargeOpen = $state(false);
 	let recharging = $state(false);
+	let plans = $state<Array<{ id: string; name: string; url: string; points: number }>>([]);
 	let queuing = $state(false);
 	let queueSuccess = $state("");
 	let queueError = $state("");
@@ -210,8 +211,10 @@
 	$effect(() => {
 		if (isLoggedIn) {
 			loadWalletBalance();
+			fetchPlans().then(r => plans = r.items).catch(() => {});
 		} else {
 			walletBalance = null;
+			plans = [];
 		}
 	});
 
@@ -468,11 +471,11 @@ async function startGeneration() {
 		} catch { walletBalance = null; }
 	}
 
-	async function handleRecharge() {
-		if (recharging) return;
+	async function handleRecharge(planUrl?: string) {
+		if (recharging || !planUrl) return;
 		recharging = true;
 		try {
-			const r = await createWalletOrder();
+			const r = await createWalletOrder(planUrl);
 			window.open(r.pay_url, '_blank');
 			rechargeOpen = false;
 			setTimeout(loadWalletBalance, 5000);
@@ -984,15 +987,19 @@ async function startGeneration() {
 		<Dialog.Header>
 			<Dialog.Title>⚡ 充值生图点数</Dialog.Title>
 			<Dialog.Description class="space-y-3">
-				<div class="rounded-lg border p-4 text-center">
-					<p class="text-2xl font-bold text-amber-500">6,000</p>
-					<p class="text-xs text-muted-foreground">生图点数</p>
-					<p class="text-sm mt-1">仅需 <span class="font-semibold">6 元</span></p>
-				</div>
+				{#if plans.length === 0}
+					<p class="text-xs text-muted-foreground py-4 text-center">暂无充值计划</p>
+				{:else}
+					{#each plans as plan}
+						<Button class="w-full" variant="outline" onclick={() => handleRecharge(plan.url)} disabled={recharging}>
+							<div class="flex items-center justify-between w-full">
+								<span>{plan.name}</span>
+								<span class="text-amber-500 font-bold">{plan.points.toLocaleString()} 点</span>
+							</div>
+						</Button>
+					{/each}
+				{/if}
 				<p class="text-xs text-muted-foreground">支付后点数自动到账，若未到账请稍候刷新页面。</p>
-				<Button class="w-full" onclick={handleRecharge} disabled={recharging}>
-					{recharging ? '正在跳转...' : '前往爱发电支付'}
-				</Button>
 			</Dialog.Description>
 		</Dialog.Header>
 	</Dialog.Content>

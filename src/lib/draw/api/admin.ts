@@ -295,10 +295,10 @@ export async function resolveRecommendation(recId: string, action: 'approve' | '
 	}
 
 	export async function getPlans() {
-		return drawRequest<{ items: Array<{ id: string; name: string; points: number; price: number; plan_id: string; sku_id: string }> }>('/api/draw/admin/plans');
+		return drawRequest<{ items: Array<{ id: string; name: string; points: number; url: string }> }>('/api/draw/admin/plans');
 	}
 
-	export async function savePlan(plan: { id: string; name: string; points: number; price: number; plan_id: string; sku_id: string }) {
+	export async function savePlan(plan: { id: string; name: string; points: number; url: string }) {
 		return drawRequest<{ ok: boolean; plans: any[] }>('/api/draw/admin/plans', {
 			method: 'POST',
 			json: plan

@@ -95,12 +95,13 @@ let loadingMore = $state(false);
 
 	// Credits / Wallet
 	let wallets = $state<Array<{ user_id: number; balance: number; total_purchased: number; _edit?: number }>>([]);
-	const PAY_URL_DISPLAY = 'https://www.ifdian.net/order/create?remark={用户ID}&product_type=1&plan_id=f2b6ebcc565411f195575254001e7c00&sku=[{...}]&viokrz_ex=0';
+	let adminPlans = $state<Array<{ id: string; name: string; points: number; url: string }>>([]);
 
 	async function loadCredits() {
 		try {
-			const wr = await admin.getWallets();
+			const [wr, pr] = await Promise.all([admin.getWallets(), admin.getPlans()]);
 			wallets = wr.items.map(w => ({ ...w, _edit: w.balance }));
+			adminPlans = pr.items;
 		} catch {}
 	}
 
@@ -1579,9 +1580,17 @@ function formatTime(ts: number) {
 							<p class="text-xs text-muted-foreground py-4 text-center">暂无数据</p>
 						{/if}
 						<div class="border-t pt-3">
-							<p class="text-xs font-medium mb-2">充值链接模板</p>
-                <code class="block text-[10px] break-all bg-muted rounded p-2">{PAY_URL_DISPLAY}</code>
-							<p class="text-[10px] text-muted-foreground mt-1">remark 自动替换为当前用户论坛 ID</p>
+							<p class="text-xs font-medium mb-2">充值计划</p>
+							{#each adminPlans as plan}
+								<div class="flex items-center gap-2 text-xs border rounded-lg px-3 py-2 mb-1">
+									<input bind:value={plan.name} class="w-20 h-7 px-2 rounded border bg-transparent text-xs" placeholder="名称" />
+									<input bind:value={plan.points} type="number" class="w-16 h-7 px-2 rounded border bg-transparent text-xs" placeholder="点数" />
+									<input bind:value={plan.url} class="flex-1 h-7 px-2 rounded border bg-transparent text-xs truncate" placeholder="支付链接(remark=1)" />
+									<Button size="sm" variant="outline" class="h-7 text-xs" onclick={() => admin.savePlan({ id: plan.id, name: plan.name, url: plan.url, points: Number(plan.points) }).then(loadCredits)}>保存</Button>
+									<Button size="sm" variant="destructive" class="h-7 text-xs" onclick={() => admin.deletePlan(plan.id).then(loadCredits)}>删除</Button>
+								</div>
+							{/each}
+							<Button size="sm" variant="ghost" class="text-xs mt-1" onclick={() => { adminPlans = [...adminPlans, { id: 'new_' + Date.now(), name: '', points: 0, url: '' }]; }}>+ 新增计划</Button>
 						</div>
 					</CardContent>
 				</Card>
