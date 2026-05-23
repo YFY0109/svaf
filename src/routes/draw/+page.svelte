@@ -936,14 +936,14 @@ async function startGeneration() {
 />
 </div>
 
-<Dialog.Dialog open={announcementOpen} onOpenChange={(o) => { if (!o) { announcementOpen = false; try { sessionStorage.setItem('draw-announcement-dismissed', '1'); } catch {} } }}>
-	<Dialog.DialogContent class="max-w-md">
-		<Dialog.DialogHeader>
-			<Dialog.DialogTitle>📢 公告</Dialog.DialogTitle>
-			<Dialog.DialogDescription class="text-sm leading-relaxed">{ANNOUNCEMENT_TEXT}</Dialog.DialogDescription>
-		</Dialog.DialogHeader>
-	</Dialog.DialogContent>
-</Dialog.Dialog>
+<Dialog.Root open={announcementOpen} onOpenChange={(o) => { if (!o) { announcementOpen = false; try { sessionStorage.setItem('draw-announcement-dismissed', '1'); } catch {} } }}>
+	<Dialog.Content class="max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>📢 公告</Dialog.Title>
+			<Dialog.Description class="text-sm leading-relaxed">{ANNOUNCEMENT_TEXT}</Dialog.Description>
+		</Dialog.Header>
+	</Dialog.Content>
+</Dialog.Root>
 
 
 
