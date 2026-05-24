@@ -28,6 +28,13 @@
 	let error = $state('');
 	let loadingPath = $state('');
 	let abortCtrl: AbortController | null = null;
+	let expandedCategories = $state(new Set<string>());
+
+	function toggleCategory(cat: string) {
+		if (expandedCategories.has(cat)) expandedCategories.delete(cat);
+		else expandedCategories.add(cat);
+		expandedCategories = new Set(expandedCategories);
+	}
 
 	const filtered = $derived(() => {
 		if (!search.trim()) return workflows;
@@ -52,6 +59,9 @@
 		$effect(() => {
 			if (workflows.length > 0 && value && !inited) {
 				inited = true;
+				// Auto-expand category containing current value
+				const wf = workflows.find(w => w.path === value);
+				if (wf) { expandedCategories.add(wf.category); expandedCategories = new Set(expandedCategories); }
 				fetchWorkflowDetail(value, undefined, subdir).then(detail => {
 					onpromptload?.(detail.builtin_prompt, detail.builtin_negative_prompt);
 				}).catch(() => {});
@@ -137,33 +147,39 @@
 		<div class="{constrainHeight ? 'max-h-64' : ''} overflow-y-auto space-y-2 pr-1">
 			{#each grouped() as group}
 				<div>
-					<div class="text-xs text-muted-foreground font-medium mb-1 px-0.5">{group.category || '未分类'}</div>
-					<div class="flex flex-wrap gap-1.5">
-						{#each group.items as wf}
-							<button
-								class="inline-flex items-center gap-1.5 p-1.5 rounded-md border text-left text-xs transition-all hover:bg-accent {value === wf.path ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'border-border'}"
-								onclick={() => select(wf)}
-								disabled={loadingPath === wf.path}
-							>
-								{#if wf.thumbnail}
-									<img
-										src={getThumbnailUrl(wf.path)}
-										alt=""
-										class="size-8 rounded object-cover shrink-0"
-										loading="lazy"
-									/>
-								{:else}
-									<div class="size-8 rounded bg-muted flex items-center justify-center shrink-0">
-										<Icon icon="mdi:image-off-outline" class="size-4 text-muted-foreground" />
-									</div>
-								{/if}
-								{#if loadingPath === wf.path}
-									<Icon icon="mdi:loading" class="size-4 shrink-0 animate-spin" />
-								{/if}
-								<span class="truncate">{wf.path.split('/').pop()?.replace(/\.(json|txt)$/, '')}</span>
-							</button>
-						{/each}
-					</div>
+					<button onclick={() => toggleCategory(group.category)} class="flex items-center gap-1 text-xs text-muted-foreground font-medium mb-1 px-0.5 hover:text-foreground transition-colors w-full text-left">
+						<Icon icon={expandedCategories.has(group.category) ? 'mdi:chevron-down' : 'mdi:chevron-right'} class="size-3.5 shrink-0" />
+						{group.category || '未分类'}
+						<span class="text-[10px] text-muted-foreground/60">({group.items.length})</span>
+					</button>
+					{#if expandedCategories.has(group.category)}
+						<div class="flex flex-wrap gap-1.5">
+							{#each group.items as wf}
+								<button
+									class="inline-flex items-center gap-1.5 p-1.5 rounded-md border text-left text-xs transition-all hover:bg-accent {value === wf.path ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'border-border'}"
+									onclick={() => select(wf)}
+									disabled={loadingPath === wf.path}
+								>
+									{#if wf.thumbnail}
+										<img
+											src={getThumbnailUrl(wf.path)}
+											alt=""
+											class="size-8 rounded object-cover shrink-0"
+											loading="lazy"
+										/>
+									{:else}
+										<div class="size-8 rounded bg-muted flex items-center justify-center shrink-0">
+											<Icon icon="mdi:image-off-outline" class="size-4 text-muted-foreground" />
+										</div>
+									{/if}
+									{#if loadingPath === wf.path}
+										<Icon icon="mdi:loading" class="size-4 shrink-0 animate-spin" />
+									{/if}
+									<span class="truncate">{wf.path.split('/').pop()?.replace(/\.(json|txt)$/, '')}</span>
+								</button>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			{/each}
 			{#if grouped().length === 0}
