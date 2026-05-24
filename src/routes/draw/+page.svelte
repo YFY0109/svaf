@@ -917,6 +917,16 @@ async function startGeneration(mode = 'wai') {
 						</div>
 						<div class="flex items-center justify-between">
 							<h3 class="text-sm font-medium flex items-center gap-1.5"><Icon icon="mdi:account-outline" class="size-4" />我的图片 <span class="text-xs text-muted-foreground">({myImages.length}/{myImagesTotal})</span></h3>
+							<div class="flex items-center gap-1">
+								<Button variant={selectMode ? 'default' : 'outline'} size="sm" onclick={() => { selectMode = !selectMode; if (!selectMode) selectedPaths = new Set(); }}>
+									<Icon icon="mdi:checkbox-multiple-marked-outline" class="size-3.5 mr-1" />{selectMode ? '取消' : '选择'}
+								</Button>
+								{#if selectedPaths.size > 0}
+									<Button variant="destructive" size="sm" onclick={handleBatchDelete} disabled={queuing}>
+										<Icon icon="mdi:delete-outline" class="size-3.5 mr-1" />删除 ({selectedPaths.size})
+									</Button>
+								{/if}
+							</div>
 						</div>
 						{#if myImagesLoading}
 							<div class="text-xs text-muted-foreground py-8 text-center">加载中...</div>
@@ -929,7 +939,7 @@ async function startGeneration(mode = 'wai') {
 										{#each col as path (ci + '-' + path)}
 											{@const item = myImages.find(i => i.path === path)}
 											{#if item}
-												<div role="button" tabindex="0" class="group relative rounded-md overflow-hidden border hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer"
+												<div role="button" tabindex="0" class="group relative rounded-md overflow-hidden border hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer {selectedPaths.has(item.path) ? 'ring-2 ring-primary' : ''}"
 													onclick={() => { if (selectMode) toggleSelect(item.path); else { myLbIndex = myImages.indexOf(item); myLbOpen = true; } }}>
 													<img src={getImageProxyUrl(item.path)} alt={item.path} loading="lazy" decoding="async" style="aspect-ratio: 1;" onload={handleImgLoad} class="block w-full h-auto bg-muted" />
 													{#if selectMode}
