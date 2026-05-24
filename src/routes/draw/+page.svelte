@@ -352,20 +352,24 @@
 			// Try to detect style from builtin_prompt or style_tags
 			styleTags = '';
 			styleName = '';
+			let detectedStyle = '';
 			if (res.style_tags) {
-				styleTags = res.style_tags;
-				styleName = res.style_tags;
+				detectedStyle = res.style_tags;
 			} else if (res.builtin_prompt) {
 				const firstTag = res.builtin_prompt.split(',')[0].trim();
 				const cleaned = firstTag.replace(/^by\s+/i, '').replace(/^@/, '');
 				if (cleaned !== firstTag) {
 					const allStyles = await fetchStyles();
 					const match = allStyles.styles.find(s => s.tags.toLowerCase() === cleaned.toLowerCase());
-					if (match) {
-						styleTags = firstTag;
-						styleName = match.name || match.tags;
-					}
+					if (match) detectedStyle = firstTag;
 				}
+			}
+			if (detectedStyle) {
+				styleTags = detectedStyle;
+				styleName = detectedStyle;
+				// Strip style tag from prompt to avoid duplication on submit
+				const commaIdx = (res.builtin_prompt || '').indexOf(',');
+				if (commaIdx >= 0) directPrompt = (res.builtin_prompt || '').slice(commaIdx + 1).trim();
 			}
 			localStorage.setItem('draw-fork-pending', JSON.stringify({ workflow_api: null, builtin_prompt: res.builtin_prompt || '', builtin_negative_prompt: res.builtin_negative_prompt || '', default_width: res.default_width || null, default_height: res.default_height || null, seed: res.seed, style_tags: res.style_tags || '', workflow_path: res.workflow_path || '', workflow_name: res.workflow_name || '' }));
 			forkMessage = 'Fork 成功';
