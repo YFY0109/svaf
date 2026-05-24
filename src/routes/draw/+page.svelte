@@ -268,7 +268,6 @@
 			})
 			.catch(() => {});
 	}
-	});
 
 	$effect(() => {
 		console.log('[FORK] $effect (consumeFork) running');
