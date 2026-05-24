@@ -35,5 +35,6 @@ export interface ForumPostInput {
 	title: string;
 	content: string;
 	categoryId?: string;
+	category_id?: string | number;
 	excerpt?: string;
 }

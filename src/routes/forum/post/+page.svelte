@@ -275,7 +275,7 @@
 			const updated = await updatePost(post.id, {
 				title,
 				content,
-				categoryId: editCategoryId || undefined
+				category_id: editCategoryId || undefined
 			});
 			post = { ...post, ...updated };
 			editing = false;

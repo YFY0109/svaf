@@ -72,7 +72,7 @@
 			const result = await createPost({
 				title: t,
 				content: c,
-				categoryId: categoryId || undefined
+				category_id: categoryId || undefined
 			});
 			const nextId = String(result.id || '').trim();
 			if (!nextId) throw new Error('发帖成功，但未拿到帖子 ID。');
