@@ -84,22 +84,6 @@ export async function deleteImages(paths: string[]) {
 	);
 }
 
-// --- Reports ---
-
-export async function getReports() {
-	return drawRequest<{ reports: AdminReport[]; total: number }>('/api/draw/admin/reports');
-}
-
-export async function resolveReport(
-	reportId: string,
-	action: 'delete' | 'ban_creator' | 'ban_reporter' | 'dismiss'
-) {
-	return drawRequest<{ ok: boolean; action: string }>('/api/draw/admin/report/resolve', {
-		method: 'POST',
-		json: { report_id: reportId, action }
-	});
-}
-
 // --- Announcement ---
 
 export async function getAnnouncement() {

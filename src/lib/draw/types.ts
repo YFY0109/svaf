@@ -235,17 +235,6 @@ export interface AdminRecentImage {
 	image2?: string;
 }
 
-export interface AdminReport {
-	id: string;
-	image_path: string;
-	reporter_id: string;
-	reason: string;
-	timestamp: number;
-	status: string;
-	creator_id: string;
-	image_exists: boolean;
-}
-
 export interface AdminLimits {
 	gen_cooldown_sec: number;
 	gen_cooldown_after_sec: number;
