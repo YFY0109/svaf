@@ -2,7 +2,6 @@
 title: 隐私政策
 published: 2026-05-09T00:00:00
 description: 本隐私政策适用于 AcoFork Blog（以下简称"我们"）。
-image: "img/privacy-policy.png"
 draft: false
 hide: true
 lang: ""
@@ -39,6 +38,7 @@ lang: ""
       <TableCell>用于全站浏览量计数，同时作为浏览量 API 端点</TableCell>
     </TableRow>
   </TableBody>
+</Table>
 
 ### 广告（始终加载）
 
@@ -55,7 +55,6 @@ lang: ""
       <TableCell>展示广告，使用 Cookie 提供个性化广告。此项不可关闭。</TableCell>
     </TableRow>
   </TableBody>
-</Table>
 </Table>
 
 ### 功能（需用户同意）
