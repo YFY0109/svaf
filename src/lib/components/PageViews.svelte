@@ -45,8 +45,9 @@
 	}
 
 	$effect(() => {
-		void pathname;
-		void cacheKey;
+		const key = cacheKey ?? `pageviews-${pathname}`;
+		void key;
+		pageViews = spaCache.peek(key) ?? null;
 		if (pageViews === null) loadPageViews();
 	});
 </script>
