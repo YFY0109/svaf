@@ -93,9 +93,11 @@
 	{@render children()}
 </div>
 
-<div class="text-center py-4">
-	<PageViews pathname={$page.url.pathname} class="text-xs text-muted-foreground" />
-</div>
+{#if !$page.url.pathname.startsWith('/posts/')}
+	<div class="text-center py-4">
+		<PageViews pathname={$page.url.pathname} class="text-xs text-muted-foreground" />
+	</div>
+{/if}
 
 <Footer />
 

@@ -7,6 +7,7 @@
 	import ImageViewer from '$lib/components/ImageViewer.svelte';
 	import Giscus from '$lib/components/Giscus.svelte';
 	import PostToc from '$lib/components/PostToc.svelte';
+	import PageViews from '$lib/components/PageViews.svelte';
 	import { NAV_HEIGHT } from '$lib/constants';
 	import { highlightCodeBlocksIn, switchHighlightTheme } from '$lib/utils/highlight';
 	import { renderMermaidIn, rerenderAllMermaid } from '$lib/utils/mermaid';
@@ -187,12 +188,6 @@
 			<time class="text-sm text-muted-foreground">
 				{formatDate(data.post.metadata.published)}
 			</time>
-			<PageViews
-				pathname="/posts/{data.slug}/"
-				cacheKey="pv:{data.slug}"
-				class="text-sm text-muted-foreground"
-				prefix="· "
-			/>
 		</div>
 
 		<h1 class="mb-4 text-4xl font-bold">{data.post.metadata.title}</h1>
@@ -208,7 +203,13 @@
 					alt={data.post.metadata.title}
 					class="w-full rounded-lg object-cover"
 				/>
-			</div>
+			<PageViews
+				pathname="/posts/{data.slug}/"
+				cacheKey="pv:{data.slug}"
+				class="text-sm text-muted-foreground"
+				prefix="· "
+			/>
+		</div>
 		{/if}
 	</header>
 
