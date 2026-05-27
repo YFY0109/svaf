@@ -263,19 +263,12 @@
 			</div>
 		</div>
 
-		<Dialog.Footer class="flex-wrap gap-2">
-			<Button variant="destructive" onclick={withdrawConsent}>
+		<Dialog.Footer class="flex-col gap-2">
+			<Button variant="destructive" class="w-full" onclick={withdrawConsent}>
 				<Icon icon="mdi:close-circle-outline" class="size-4 mr-1" />撤回同意
 			</Button>
-			<div class="flex-1" />
-			<Button variant="outline" onclick={acceptNecessary} disabled={!agreed}>
-				仅必要 Cookie
-			</Button>
-			<Button onclick={saveCustomPreferences} disabled={!agreed}>
+			<Button class="w-full" onclick={saveCustomPreferences} disabled={!agreed}>
 				保存设置
-			</Button>
-			<Button onclick={acceptAll} disabled={!agreed}>
-				接受全部
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
