@@ -354,6 +354,9 @@
 								<li>若你对本协议有任何疑问，可通过本站提供的联系方式与运营者取得联系。</li>
 							</ol>
 						</section>
+						<section>
+							<p class="text-xs text-muted-foreground">最后更新：2026-05-27</p>
+						</section>
 					</div>
 				{:else}
 					<div class="space-y-4">
