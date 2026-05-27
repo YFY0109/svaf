@@ -60,7 +60,6 @@
 			const spacingY = fs + 60;
 			for (let y = padding; y < canvas.height; y += spacingY) {
 				for (let x = padding; x < canvas.width; x += spacingX) {
-					ctx.globalAlpha = op >= 100 ? 0.5 : (op / 100) * 0.5;
 					ctx.fillText(text, x, y);
 				}
 			}
