@@ -122,20 +122,42 @@
 						隐私与协议
 					</CardTitle>
 					<CardDescription>
-						我们使用 Cookie 来改善您的浏览体验、提供个性化内容和分析网站流量。
+						继续使用本网站即表示你同意以下协议及隐私政策中所述的 Cookie 使用方式。
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div class="space-y-4">
 						<p class="text-sm text-muted-foreground">
-							点击"接受全部"即表示您同意我们使用所有 Cookie。您也可以点击"自定义设置"来选择您希望启用的 Cookie 类型。
+							点击"接受全部"即表示您同意我们使用所有 Cookie，您也可以点击"自定义设置"来选择您希望启用的 Cookie 类型。
 						</p>
 
 						<label class="flex items-start gap-3 p-3 rounded-lg border bg-muted/30 cursor-pointer">
 							<Checkbox bind:checked={agreed} class="mt-0.5" />
-							<div class="text-sm">
-								我已阅读并同意 <a href="/posts/draw-user-agreement/" target="_blank" class="text-primary underline">《用户协议》</a>
-								和 <a href="/posts/privacy-policy/" target="_blank" class="text-primary underline">《隐私政策》</a>
+							<div class="text-xs space-y-1">
+								<span>我已阅读并同意以下协议：</span>
+								<details class="text-muted-foreground">
+									<summary class="cursor-pointer hover:text-foreground">《用户协议》</summary>
+									<div class="mt-2 space-y-1.5 pl-2 border-l-2 border-muted">
+										<p>1. 本网站提供的 AI 生图服务生成的内容由人工智能自动生成，不代表本网站观点。</p>
+										<p>2. 你承诺不会利用本服务生成、上传或传播任何违法、侵权、色情、暴力、政治敏感或其他违反中国法律法规及公序良俗的内容。</p>
+										<p>3. 论坛发言请遵守基本网络礼仪，禁止恶意攻击、垃圾广告、刷屏等行为。违规内容可能被删除，账号可能被限制或封禁。</p>
+										<p>4. 本服务按"现状"提供，不保证任何服务可用性（SLA）。站内点券及内购服务为自愿充值，一经售出概不退换。</p>
+										<p>5. 我们有权审查你提交及生成的内容，并依据本协议对违规账号采取措施。</p>
+										<p>6. 我们保留随时修改本协议的权利，修改后的协议自发布之日起生效。</p>
+									</div>
+								</details>
+								<details class="text-muted-foreground">
+									<summary class="cursor-pointer hover:text-foreground">《隐私政策》</summary>
+									<div class="mt-2 space-y-1.5 pl-2 border-l-2 border-muted text-muted-foreground">
+										<p><strong>必要服务（始终加载）：</strong>Umami Analytics（自托管）收集匿名访问数据；Cloudflare Web Analytics 无 Cookie 无指纹追踪。</p>
+										<p><strong>广告：</strong>Google Adsense 展示广告，使用 Cookie 提供个性化广告。</p>
+										<p><strong>功能（需同意）：</strong>Giscus 基于 GitHub Discussions 的评论系统。</p>
+										<p><strong>分析（需同意）：</strong>百度统计、Google Analytics、Microsoft Clarity 收集站点访问与用户行为数据。</p>
+										<p><strong>本地存储：</strong>cookie-consent-preferences（同意偏好）、theme（主题）、论坛登录凭证。</p>
+										<p><strong>其他：</strong>Cloudflare Turnstile 人机验证；按需加载 Mermaid.js、Highlight.js、dash.js、Iconify 等 CDN 资源。</p>
+										<p>数据控制：可通过本页面底部的「隐私与协议设置」按钮随时修改同意偏好。清除浏览器 localStorage 可删除本地存储的所有数据。</p>
+									</div>
+								</details>
 							</div>
 						</label>
 
@@ -172,9 +194,31 @@
 		<div class="space-y-6 py-4">
 			<label class="flex items-start gap-3 p-3 rounded-lg border bg-muted/30 cursor-pointer">
 				<Checkbox bind:checked={agreed} class="mt-0.5" />
-				<div class="text-sm">
-					我已阅读并同意 <a href="/posts/draw-user-agreement/" target="_blank" class="text-primary underline">《用户协议》</a>
-					和 <a href="/posts/privacy-policy/" target="_blank" class="text-primary underline">《隐私政策》</a>
+				<div class="text-xs space-y-1">
+					<span>我已阅读并同意以下协议：</span>
+					<details class="text-muted-foreground">
+						<summary class="cursor-pointer hover:text-foreground">《用户协议》</summary>
+						<div class="mt-2 space-y-1.5 pl-2 border-l-2 border-muted">
+							<p>1. 本网站提供的 AI 生图服务生成的内容由人工智能自动生成，不代表本网站观点。</p>
+							<p>2. 你承诺不会利用本服务生成、上传或传播任何违法、侵权、色情、暴力、政治敏感或其他违反中国法律法规及公序良俗的内容。</p>
+							<p>3. 论坛发言请遵守基本网络礼仪，禁止恶意攻击、垃圾广告、刷屏等行为。违规内容可能被删除，账号可能被限制或封禁。</p>
+							<p>4. 本服务按"现状"提供，不保证任何服务可用性（SLA）。站内点券及内购服务为自愿充值，一经售出概不退换。</p>
+							<p>5. 我们有权审查你提交及生成的内容，并依据本协议对违规账号采取措施。</p>
+							<p>6. 我们保留随时修改本协议的权利，修改后的协议自发布之日起生效。</p>
+						</div>
+					</details>
+					<details class="text-muted-foreground">
+						<summary class="cursor-pointer hover:text-foreground">《隐私政策》</summary>
+						<div class="mt-2 space-y-1.5 pl-2 border-l-2 border-muted text-muted-foreground">
+							<p><strong>必要服务（始终加载）：</strong>Umami Analytics（自托管）收集匿名访问数据；Cloudflare Web Analytics 无 Cookie 无指纹追踪。</p>
+							<p><strong>广告：</strong>Google Adsense 展示广告，使用 Cookie 提供个性化广告。</p>
+							<p><strong>功能（需同意）：</strong>Giscus 基于 GitHub Discussions 的评论系统。</p>
+							<p><strong>分析（需同意）：</strong>百度统计、Google Analytics、Microsoft Clarity 收集站点访问与用户行为数据。</p>
+							<p><strong>本地存储：</strong>cookie-consent-preferences（同意偏好）、theme（主题）、论坛登录凭证。</p>
+							<p><strong>其他：</strong>Cloudflare Turnstile 人机验证；按需加载 CDN 资源。</p>
+							<p>数据控制：可通过本页面底部的「隐私与协议设置」按钮随时修改。清除 localStorage 可删除本地存储的所有数据。</p>
+						</div>
+					</details>
 				</div>
 			</label>
 
