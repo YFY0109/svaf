@@ -188,6 +188,12 @@
 			<time class="text-sm text-muted-foreground">
 				{formatDate(data.post.metadata.published)}
 			</time>
+			<PageViews
+				pathname="/posts/{data.slug}/"
+				cacheKey="pv:{data.slug}"
+				class="text-sm text-muted-foreground"
+				prefix="· "
+			/>
 		</div>
 
 		<h1 class="mb-4 text-4xl font-bold">{data.post.metadata.title}</h1>
