@@ -95,6 +95,7 @@ export const siteConfig = {
 		{ label: '封面制作', icon: 'mdi:image-edit', href: '/cover' },
 		{ label: '画廊', icon: 'mdi:image-multiple', href: '/gallery' },
 		{ label: '隐藏图', icon: 'mdi:layers-triple', href: '/ptg' },
+		{ label: '水印', icon: 'mdi:water', href: '/watermark' },
 		{ label: '文件', icon: 'mdi:folder-open', href: '/files' },
 		{ label: '零宽短链', icon: 'mynaui:zero-circle-solid', href: '/short' },
 		{ label: '长链', icon: 'mdi:link-variant-plus', href: '/long' },
