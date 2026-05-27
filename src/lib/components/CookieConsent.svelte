@@ -116,16 +116,16 @@
 	<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
 		<div class="fixed bottom-0 left-0 right-0 p-4 md:p-6">
 			<Card class="mx-auto max-w-3xl">
-				<CardHeader>
+				<CardHeader class="pb-2">
 					<CardTitle class="flex items-center gap-2">
 						<Icon icon="mdi:cookie" class="h-5 w-5" />
 						隐私与协议
 					</CardTitle>
-					<CardDescription>
-						继续使用本网站即表示你同意以下协议及隐私政策中所述的 Cookie 使用方式。
-					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent class="pt-0">
+					<p class="text-xs text-muted-foreground mb-3">
+						继续使用本网站即表示你同意以下协议及隐私政策中所述的 Cookie 使用方式。
+					</p>
 					<div class="space-y-4">
 						<p class="text-sm text-muted-foreground">
 							点击"接受全部"即表示您同意我们使用所有 Cookie，您也可以点击"自定义设置"来选择您希望启用的 Cookie 类型。
