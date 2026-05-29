@@ -1093,6 +1093,7 @@ async function startGeneration(mode = 'wai') {
 					</button>
 				{/each}
 			{/if}
+			<div class="text-[10px] text-muted-foreground text-center pt-1">适度娱乐，理性消费</div>
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
