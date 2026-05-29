@@ -198,6 +198,7 @@ async function sendMessage() {
 									i === assistantIdx ? { ...m, content: textContent } : m
 								);
 							} else if (eventType === 'done') {
+								console.log('[酒馆] done event:', data);
 								if (data.llm_cost) totalLlmCost += data.llm_cost;
 								if (data.llm_tokens) totalLlmTokens += data.llm_tokens;
 							}
