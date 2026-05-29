@@ -164,7 +164,7 @@ async function sendMessage() {
 		const reader = response.body?.getReader();
 		if (!reader) throw new Error('无法读取响应流');
 		const decoder = new TextDecoder();
-		let buffer = ''; let textContent = '';
+		let buffer = ''; let textContent = ''; let fullText = '';
 
 		while (true) {
 			const { done: streamDone, value } = await reader.read();
@@ -202,6 +202,7 @@ async function sendMessage() {
 							} else if (eventType === 'done') {
 								if (data.llm_cost) totalLlmCost += data.llm_cost;
 								if (data.llm_tokens) totalLlmTokens += data.llm_tokens;
+								if (data.raw_text) fullText = data.raw_text;
 							}
 						} catch {}
 					}
@@ -211,7 +212,9 @@ async function sendMessage() {
 
 		chatMessages = chatMessages.map((m, i) => i === assistantIdx ? { ...m, streaming: false } : m);
 
-		chatHistory = [...chatHistory, { role: 'user', content: msg, systemPrompt }, { role: 'assistant', content: textContent }];
+		// 历史保存原始 fullText（含 [GEN:] 标签），让 LLM 能看到之前的生图 tags
+		// 显示用 textContent（干净文本），UI 已过滤
+		chatHistory = [...chatHistory, { role: 'user', content: msg, systemPrompt }, { role: 'assistant', content: fullText }];
 		if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
 
 		// 立即保存用户消息
@@ -220,7 +223,7 @@ async function sendMessage() {
 		// 如果没有生图任务，立即保存助手消息；否则等图片完成后再保存
 		const assistantMsg = chatMessages[assistantIdx];
 		if (!assistantMsg?.pendingImages?.length) {
-			try { await appendChatHistory([{ role: 'assistant', content: textContent }]); } catch {}
+			try { await appendChatHistory([{ role: 'assistant', content: fullText }]); } catch {}
 		}
 	} catch (e: any) {
 		chatMessages = chatMessages.map((m, i) =>
