@@ -1150,8 +1150,53 @@ async function startGeneration(mode = 'wai') {
 				<div class="space-y-2">
 					<div>最新的动漫文生图模型，推荐使用 <strong>自然语言的英文</strong> 描述画面，模型理解能力极强，非常听话！</div>
 					<div>支持 <strong>英文 Tag</strong> 和 <strong>英文自然语言（长句子）</strong> 混搭输入，推荐以英文自然语言为主。</div>
-					<div>角色库：<a href="https://www.downloadmost.com/NoobAI-XL/danbooru-character/" target="_blank" rel="noopener noreferrer" class="text-primary underline">Danbooru Characters</a>（与 WAI 共用）</div>
-					<div>画风库：<a href="https://thetacursed.github.io/Anima-Style-Explorer/" target="_blank" rel="noopener noreferrer" class="text-primary underline">Anima Style Explorer</a>（专用）</div>
+					<div><strong>不会写英文？</strong>在「自然语言描述」写中文，点「转换」即可。</div>
+					<div>角色库：Danbooru Characters（与 WAI 共用）</div>
+					<div>画风库：Anima Style Explorer（专用）</div>
+				</div>
+			</Dialog.Description>
+		</Dialog.Header>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root open={txt2imgHelpOpen} onOpenChange={(o) => txt2imgHelpOpen = o}>
+	<Dialog.Content class="max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>🎨 文生图</Dialog.Title>
+			<Dialog.Description class="text-sm leading-relaxed">
+				<div class="space-y-2">
+					<div><strong>基本用法：</strong></div>
+					<ol class="list-decimal pl-4 space-y-1">
+						<li>选择工作流（无Lora 通用，或角色Lora专用）</li>
+						<li>选择画风（可选，推荐）</li>
+						<li>在「自然语言描述」用中文写下你想画什么，点「转换」，LLM 会自动翻译成英文 Tag</li>
+						<li>点击「开始生成」</li>
+					</ol>
+					<div>也可以直接在「正向提示词」手写英文 Tag。</div>
+					<div><strong>角色库</strong>：Danbooru 角色库（英文搜索）</div>
+					<div><strong>画风库</strong>：Danbooru 画师库（by xxx 格式）</div>
+					<div class="text-muted-foreground text-xs">💡 翻译功能基于内置 LLM，也可以用 DeepSeek、豆包、ChatGPT 等外部 AI 来生成 Tag。</div>
+				</div>
+			</Dialog.Description>
+		</Dialog.Header>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root open={img2imgHelpOpen} onOpenChange={(o) => img2imgHelpOpen = o}>
+	<Dialog.Content class="max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>🖼️ 图生图</Dialog.Title>
+			<Dialog.Description class="text-sm leading-relaxed">
+				<div class="space-y-2">
+					<div>上传图片，描述你想让它变成的样子。</div>
+					<div><strong>用法：</strong></div>
+					<ol class="list-decimal pl-4 space-y-1">
+						<li>上传一张原图</li>
+						<li>用中文描述你想修改的内容，点「转换」</li>
+						<li>点击「开始生成」</li>
+					</ol>
+					<div>支持中文描述，但<strong>英文描述的遵从度更高</strong>。</div>
+					<div class="text-muted-foreground text-xs">💡 翻译功能基于内置 LLM，也可以用 DeepSeek、豆包、ChatGPT 等外部 AI 来生成 Tag。</div>
 				</div>
 			</Dialog.Description>
 		</Dialog.Header>
