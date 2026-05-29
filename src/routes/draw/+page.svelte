@@ -738,9 +738,8 @@ async function startGeneration(mode = 'wai') {
 		<div class="flex items-center gap-x-2 gap-y-1 flex-wrap">
 			<Icon icon="mdi:palette" class="size-6 text-primary" />
 			<h1 class="text-xl font-bold">AI 生图</h1>
-			<a href="https://2x.nz/posts/ai-wife/#%E6%96%B0%E7%89%88-2xnzdraw-%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 h-7 rounded-4xl text-xs font-medium border border-border bg-input/30 text-muted-foreground hover:bg-input/50 hover:text-foreground transition-all no-underline shrink-0">
-				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-				使用技巧
+			<a href="https://2x.nz/q" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 h-7 rounded-4xl text-xs font-bold no-underline shrink-0 text-white" style="background: linear-gradient(135deg, #ff0000, #ff7700, #ffff00, #00ff00, #0077ff, #8800ff, #ff00ff); background-size: 400% 400%; animation: rainbow 3s ease infinite;">
+				加群
 			</a>
 			{#if onlineCount > 0}
 				<Badge variant="secondary" class="text-xs">
@@ -1079,31 +1078,13 @@ async function startGeneration(mode = 'wai') {
 	</Dialog.Content>
 </Dialog.Root>
 
-<Dialog.Root open={rechargeOpen} onOpenChange={(o) => rechargeOpen = o}>
-	<Dialog.Content class="max-w-sm">
-		<Dialog.Header>
-			<Dialog.Title class="flex items-center gap-2">
-				<Icon icon="mdi:wallet-plus-outline" class="size-5" />
-				充值
-			</Dialog.Title>
-		</Dialog.Header>
-		<div class="space-y-2 px-6 pb-4">
-			{#if plans.length === 0}
-				<div class="text-xs text-muted-foreground py-4 text-center">暂无充值方案</div>
-			{:else}
-				{#each plans as plan}
-					<button onclick={() => handleRecharge(plan)} disabled={recharging} class="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors disabled:opacity-50">
-						<div class="text-left">
-							<div class="text-sm font-medium">{plan.name}</div>
-							<div class="text-xs text-muted-foreground">⚡{plan.points} 点数</div>
-						</div>
-						<span class="text-sm font-medium text-amber-600 dark:text-amber-400">{recharging ? '处理中...' : '立即充值 →'}</span>
-					</button>
-				{/each}
-			{/if}
-		</div>
-	</Dialog.Content>
-</Dialog.Root>
+<style>
+	@keyframes rainbow {
+		0% { background-position: 0% 50%; }
+		50% { background-position: 100% 50%; }
+		100% { background-position: 0% 50%; }
+	}
+</style>
 
 <Dialog.Root open={myRecsOpen} onOpenChange={(o) => myRecsOpen = o}>
 	<Dialog.Content class="sm:max-w-lg">
