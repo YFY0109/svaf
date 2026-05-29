@@ -848,7 +848,7 @@ async function startGeneration(mode = 'wai') {
 					</TabsTrigger>
 					<TabsTrigger value="saloon" class="flex-1">
 						<Icon icon="mdi:chat-outline" class="size-4 mr-1" />
-						酒馆
+						酒馆（Beta）
 					</TabsTrigger>
 				</TabsList>
 
