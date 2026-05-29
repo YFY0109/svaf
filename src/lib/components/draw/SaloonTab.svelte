@@ -282,13 +282,16 @@ $effect(() => {
 
 <div class="flex flex-col h-[calc(100vh-260px)] min-h-[400px]">
 	<!-- 设定区 -->
-	<div class="border rounded-lg bg-card mb-3 {conversationStarted ? 'opacity-60' : ''}">
+	<div class="border rounded-lg bg-card mb-3">
 		<button class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium" onclick={() => settingsOpen = !settingsOpen}>
 			<span class="flex items-center gap-1.5">
 				<Icon icon="mdi:cog-outline" class="size-4" />
 				角色扮演设定
 				{#if presetName}<Badge variant="secondary" class="text-[10px]">{presetName}</Badge>{/if}
-				{#if conversationStarted}<Badge variant="outline" class="text-[10px] text-muted-foreground">对话中锁定</Badge>{/if}
+				{#if conversationStarted}
+					<Badge variant="outline" class="text-[10px] text-muted-foreground">对话中锁定</Badge>
+					<button class="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/80 transition-colors" onclick={(e) => { e.stopPropagation(); clearChat(); }}>清空并新建</button>
+				{/if}
 			</span>
 			<Icon icon={settingsOpen ? "mdi:chevron-up" : "mdi:chevron-down"} class="size-4 text-muted-foreground" />
 		</button>
@@ -309,10 +312,10 @@ $effect(() => {
 					{#if !conversationStarted}
 						<Button variant="default" size="sm" class="h-7 text-xs" onclick={savePreset}><Icon icon="mdi:content-save-outline" class="size-3.5 mr-1" />保存预设</Button>
 						<Button variant="outline" size="sm" class="h-7 text-xs" onclick={newPreset}>新建</Button>
+						<Button variant="outline" size="sm" class="h-7 text-xs ml-auto" onclick={clearChat}>
+							<Icon icon="mdi:chat-remove-outline" class="size-3.5 mr-1" />清空聊天
+						</Button>
 					{/if}
-					<Button variant={conversationStarted ? "default" : "outline"} size="sm" class="h-7 text-xs {conversationStarted ? '' : 'ml-auto'}" onclick={clearChat}>
-						<Icon icon="mdi:chat-remove-outline" class="size-3.5 mr-1" />{conversationStarted ? '清空并新建' : '清空聊天'}
-					</Button>
 				</div>
 			</div>
 		{/if}
