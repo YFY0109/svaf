@@ -914,7 +914,7 @@ async function startGeneration(mode = 'wai') {
 				</TabsContent>
 
 				<TabsContent value="saloon" class="mt-4">
-					<SaloonTab {workflowPath} {styleTags} {negativePrompt} {width} {height} {turnstileToken} />
+					<SaloonTab {workflowPath} {styleTags} {negativePrompt} {width} {height} {turnstileToken} pointsCostSubmit={pointsConfig?.text_to_image ?? 0} />
 				</TabsContent>
 
 			</Tabs>

@@ -12,6 +12,7 @@ let {
 	width = 0,
 	height = 0,
 	turnstileToken = '',
+	pointsCostSubmit = 0,
 }: {
 	workflowPath?: string;
 	styleTags?: string;
@@ -19,6 +20,7 @@ let {
 	width?: number;
 	height?: number;
 	turnstileToken?: string;
+	pointsCostSubmit?: number;
 } = $props();
 
 const PRESETS_KEY = 'chat_presets_v1';
@@ -44,6 +46,12 @@ let inputText = $state('');
 let sending = $state(false);
 let settingsOpen = $state(true);
 let errorText = $state('');
+
+// 消耗统计
+let totalLlmCost = $state(0);
+let totalLlmTokens = $state(0);
+let totalGenCount = $state(0);
+let totalGenCost = $state(0);
 
 // 生图队列跟踪：item_id → { tags, status, imageUrl }
 let genJobs = $state<Map<number, { tags: string; status: string; imageUrl: string }>>(new Map());
@@ -122,6 +130,8 @@ async function submitGenJob(tags: string) {
 			turnstile_token: turnstileToken || undefined,
 		});
 		genJobs = new Map(genJobs).set(res.item_id, { tags, status: 'pending', imageUrl: '' });
+		totalGenCount++;
+		totalGenCost += pointsCostSubmit;
 		startQueuePolling();
 		return res.item_id;
 	} catch (e: any) {
@@ -199,6 +209,9 @@ async function sendMessage() {
 								chatMessages = chatMessages.map((m, i) =>
 									i === assistantIdx ? { ...m, content: textContent } : m
 								);
+							} else if (eventType === 'done') {
+								if (data.llm_cost) totalLlmCost += data.llm_cost;
+								if (data.llm_tokens) totalLlmTokens += data.llm_tokens;
 							}
 						} catch {}
 					}
@@ -384,5 +397,18 @@ $effect(() => {
 			<Icon icon="mdi:alert-circle" class="size-4" />
 			<AlertDescription class="text-xs">{errorText}</AlertDescription>
 		</Alert>
+	{/if}
+
+	{#if totalLlmCost > 0 || totalGenCount > 0}
+		<div class="flex items-center gap-3 text-[10px] text-muted-foreground pt-1.5 border-t mt-1.5">
+			<span>本次消耗：</span>
+			{#if totalLlmCost > 0}
+				<span>💬 LLM {totalLlmTokens} tokens / {totalLlmCost} 点</span>
+			{/if}
+			{#if totalGenCount > 0}
+				<span>🎨 生图 ×{totalGenCount} / {totalGenCost} 点</span>
+			{/if}
+			<span class="font-medium text-foreground">共 {totalLlmCost + totalGenCost} 点</span>
+		</div>
 	{/if}
 </div>
