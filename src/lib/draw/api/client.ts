@@ -383,3 +383,22 @@ export async function deleteChatPreset(id: string) {
 		requiresAuth: true,
 	});
 }
+
+export async function fetchChatHistory() {
+	return drawRequest<{ items: Array<{ role: string; content: string }> }>('/api/draw/chat-history', { requiresAuth: true });
+}
+
+export async function appendChatHistory(messages: Array<{ role: string; content: string }>) {
+	return drawRequest<{ ok: boolean; total: number }>('/api/draw/chat-history', {
+		method: 'POST',
+		json: { messages },
+		requiresAuth: true,
+	});
+}
+
+export async function clearChatHistory() {
+	return drawRequest<{ ok: boolean }>('/api/draw/chat-history', {
+		method: 'DELETE',
+		requiresAuth: true,
+	});
+}

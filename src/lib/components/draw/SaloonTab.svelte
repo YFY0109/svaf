@@ -3,7 +3,7 @@ import Icon from '@iconify/svelte';
 import { Button } from '$lib/components/ui/button';
 import { Alert, AlertDescription } from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
-import { chatRequest, addToQueue, fetchMyQueue, getImageProxyUrl, fetchChatPresets, saveChatPreset, deleteChatPreset } from '$lib/draw/api/client';
+import { chatRequest, addToQueue, fetchMyQueue, getImageProxyUrl, fetchChatPresets, saveChatPreset, deleteChatPreset, fetchChatHistory, appendChatHistory, clearChatHistory } from '$lib/draw/api/client';
 import { onMount } from 'svelte';
 
 let {
@@ -67,7 +67,14 @@ async function loadPresets() {
 }
 
 // 初始化加载
-onMount(() => { loadPresets(); });
+onMount(async () => {
+	await loadPresets();
+	try {
+		const res = await fetchChatHistory();
+		chatHistory = res.items || [];
+		chatMessages = chatHistory.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+	} catch {}
+});
 
 function selectPreset(idx: number) {
 	selectedPresetIdx = idx;
@@ -114,6 +121,12 @@ function clearChat() {
 	chatMessages = [];
 	chatHistory = [];
 	genJobs = new Map();
+	totalLlmCost = 0;
+	totalLlmTokens = 0;
+	totalGenCount = 0;
+	totalGenCost = 0;
+	// 清空后端记录
+	clearChatHistory().catch(() => {});
 }
 
 async function submitGenJob(tags: string) {
@@ -230,6 +243,14 @@ async function sendMessage() {
 
 		chatHistory = [...chatHistory, { role: 'user', content: msg }, { role: 'assistant', content: textContent }];
 		if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
+
+		// 保存到后端
+		try {
+			await appendChatHistory([
+				{ role: 'user', content: msg },
+				{ role: 'assistant', content: textContent },
+			]);
+		} catch {}
 	} catch (e: any) {
 		chatMessages = chatMessages.map((m, i) =>
 			i === assistantIdx ? { ...m, content: `❌ ${e.message || '请求失败'}`, streaming: false } : m
