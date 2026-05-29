@@ -313,6 +313,7 @@ export interface ChatPayload {
 	system_prompt: string;
 	negative_prompt?: string;
 	history: Array<{ role: string; content: string }>;
+	gen_enabled?: boolean;
 }
 
 /**
