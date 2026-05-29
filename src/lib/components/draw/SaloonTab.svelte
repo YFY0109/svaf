@@ -4,6 +4,7 @@ import { Button } from '$lib/components/ui/button';
 import { Alert, AlertDescription } from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
 import { chatRequest, addToQueue, fetchMyQueue, getImageProxyUrl, fetchChatPresets, saveChatPreset, deleteChatPreset } from '$lib/draw/api/client';
+import { onMount } from 'svelte';
 
 let {
 	workflowPath = '',
@@ -66,7 +67,7 @@ async function loadPresets() {
 }
 
 // 初始化加载
-$effect(() => { loadPresets(); });
+onMount(() => { loadPresets(); });
 
 function selectPreset(idx: number) {
 	selectedPresetIdx = idx;
