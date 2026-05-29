@@ -48,7 +48,6 @@ let settingsOpen = $state(true);
 let errorText = $state('');
 let genEnabled = $state(true);
 let helpOpen = $state(false);
-let conversationStarted = $state(false);
 
 let totalLlmCost = $state(0);
 let totalLlmTokens = $state(0);
@@ -69,7 +68,6 @@ onMount(async () => {
 		chatHistory = res.items || [];
 		chatMessages = chatHistory.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content, imageUrls: m.imageUrls || [] }));
 		if (chatMessages.length > 0) {
-			conversationStarted = true;
 			// 恢复最后一条消息携带的 systemPrompt
 			for (let i = chatHistory.length - 1; i >= 0; i--) {
 				if (chatHistory[i].systemPrompt) {
@@ -111,7 +109,6 @@ function clearChat() {
 	chatMessages = []; chatHistory = [];
 	pendingItemIds = new Map();
 	totalLlmCost = 0; totalLlmTokens = 0; totalGenCount = 0; totalGenCost = 0;
-	conversationStarted = false;
 	clearChatHistory().catch(() => {});
 }
 
@@ -141,7 +138,7 @@ async function sendMessage() {
 	if (!msg || sending) return;
 	if (!systemPrompt.trim()) { errorText = '请先填写角色设定'; return; }
 	if (!workflowPath) { errorText = '请先在文生图页选择工作流'; return; }
-	errorText = ''; sending = true; conversationStarted = true;
+	errorText = ''; sending = true;
 
 	chatMessages = [...chatMessages, { role: 'user', content: msg }];
 	inputText = '';
@@ -206,9 +203,17 @@ async function sendMessage() {
 
 		chatMessages = chatMessages.map((m, i) => i === assistantIdx ? { ...m, streaming: false } : m);
 
-		chatHistory = [...chatHistory, { role: 'user', content: msg }, { role: 'assistant', content: textContent }];
+		chatHistory = [...chatHistory, { role: 'user', content: msg, systemPrompt }, { role: 'assistant', content: textContent }];
 		if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
-		try { await appendChatHistory([{ role: 'user', content: msg, systemPrompt }, { role: 'assistant', content: textContent }]); } catch {}
+
+		// 立即保存用户消息
+		try { await appendChatHistory([{ role: 'user', content: msg, systemPrompt }]); } catch {}
+
+		// 如果没有生图任务，立即保存助手消息；否则等图片完成后再保存
+		const assistantMsg = chatMessages[assistantIdx];
+		if (!assistantMsg?.pendingImages?.length) {
+			try { await appendChatHistory([{ role: 'assistant', content: textContent }]); } catch {}
+		}
 	} catch (e: any) {
 		chatMessages = chatMessages.map((m, i) =>
 			i === assistantIdx ? { ...m, content: `❌ ${e.message || '请求失败'}`, streaming: false } : m
@@ -243,14 +248,16 @@ function startQueuePolling() {
 						const pendingImages = (m.pendingImages || []).filter(p => p.itemId !== item.id);
 						return { ...m, imageUrls, pendingImages };
 					});
-					// 同步更新 chatHistory 并保存
+					// 更新 chatHistory，所有图片完成后保存一次
 					const updatedMsg = chatMessages[msgIdx];
 					if (updatedMsg) {
 						chatHistory = chatHistory.map((h, i) => {
 							if (i !== msgIdx) return h;
 							return { ...h, imageUrls: updatedMsg.imageUrls };
 						});
-						try { await appendChatHistory([{ role: 'assistant', content: updatedMsg.content, imageUrls: updatedMsg.imageUrls }]); } catch {}
+						if (!updatedMsg.pendingImages?.length) {
+							try { await appendChatHistory([{ role: 'assistant', content: updatedMsg.content, imageUrls: updatedMsg.imageUrls }]); } catch {}
+						}
 					}
 					pendingItemIds = new Map([...pendingItemIds].filter(([k]) => k !== item.id));
 				} else if (item.status === 'failed') {
@@ -297,34 +304,28 @@ $effect(() => {
 				<Icon icon="mdi:cog-outline" class="size-4" />
 				角色扮演设定
 				{#if presetName}<Badge variant="secondary" class="text-[10px]">{presetName}</Badge>{/if}
-				{#if conversationStarted}
-					<Badge variant="outline" class="text-[10px] text-muted-foreground">对话中锁定</Badge>
-					<button class="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/80 transition-colors" onclick={(e) => { e.stopPropagation(); clearChat(); }}>清空并新建</button>
-				{/if}
 			</span>
 			<Icon icon={settingsOpen ? "mdi:chevron-up" : "mdi:chevron-down"} class="size-4 text-muted-foreground" />
 		</button>
 		{#if settingsOpen}
 			<div class="px-3 pb-3 space-y-2 border-t pt-2">
 				<div class="flex gap-2">
-					<select class="flex-1 h-8 text-xs border rounded px-2 bg-background" value={selectedPresetIdx} onchange={(e) => selectPreset(Number(e.currentTarget.value))} disabled={conversationStarted}>
+					<select class="flex-1 h-8 text-xs border rounded px-2 bg-background" value={selectedPresetIdx} onchange={(e) => selectPreset(Number(e.currentTarget.value))}>
 						<option value={-1}>-- 选择或新建 --</option>
 						{#each presets as p, i}<option value={i}>{p.name}</option>{/each}
 					</select>
-					{#if selectedPresetIdx >= 0 && !conversationStarted}
+					{#if selectedPresetIdx >= 0}
 						<Button variant="outline" size="sm" class="h-8 px-2 text-xs text-destructive" onclick={deletePreset}><Icon icon="mdi:delete-outline" class="size-3.5" /></Button>
 					{/if}
 				</div>
-				<input type="text" class="w-full h-8 text-xs border rounded px-2 bg-background" placeholder="给这个角色设定起个名字" bind:value={presetName} disabled={conversationStarted} />
-				<textarea class="w-full text-xs border rounded px-2 py-1.5 bg-background resize-none" rows="3" placeholder="你正在扮演遐蝶。你是一个..." bind:value={systemPrompt} disabled={conversationStarted}></textarea>
+				<input type="text" class="w-full h-8 text-xs border rounded px-2 bg-background" placeholder="给这个角色设定起个名字" bind:value={presetName} />
+				<textarea class="w-full text-xs border rounded px-2 py-1.5 bg-background resize-none" rows="3" placeholder="你正在扮演遐蝶。你是一个..." bind:value={systemPrompt}></textarea>
 				<div class="flex gap-2">
-					{#if !conversationStarted}
-						<Button variant="default" size="sm" class="h-7 text-xs" onclick={savePreset}><Icon icon="mdi:content-save-outline" class="size-3.5 mr-1" />保存预设</Button>
-						<Button variant="outline" size="sm" class="h-7 text-xs" onclick={newPreset}>新建</Button>
-						<Button variant="outline" size="sm" class="h-7 text-xs ml-auto" onclick={clearChat}>
-							<Icon icon="mdi:chat-remove-outline" class="size-3.5 mr-1" />清空聊天
-						</Button>
-					{/if}
+					<Button variant="default" size="sm" class="h-7 text-xs" onclick={savePreset}><Icon icon="mdi:content-save-outline" class="size-3.5 mr-1" />保存预设</Button>
+					<Button variant="outline" size="sm" class="h-7 text-xs" onclick={newPreset}>新建</Button>
+					<Button variant="outline" size="sm" class="h-7 text-xs ml-auto" onclick={clearChat}>
+						<Icon icon="mdi:chat-remove-outline" class="size-3.5 mr-1" />清空聊天
+					</Button>
 				</div>
 			</div>
 		{/if}
