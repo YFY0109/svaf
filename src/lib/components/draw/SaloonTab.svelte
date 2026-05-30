@@ -4,6 +4,9 @@ import { Button } from '$lib/components/ui/button';
 import { Alert, AlertDescription } from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
 import { chatRequest, addToQueue, fetchMyQueue, getImageProxyUrl, fetchChatPresets, saveChatPreset, deleteChatPreset, fetchChatHistory, appendChatHistory, clearChatHistory } from '$lib/draw/api/client';
+import { drawEnv } from '$lib/draw/stores/env';
+import { forumAuth } from '$lib/forum/stores/auth';
+import { get } from 'svelte/store';
 import { onMount, onDestroy } from 'svelte';
 
 let {
@@ -56,6 +59,11 @@ let totalLlmCost = $state(0);
 let totalLlmTokens = $state(0);
 let totalGenCount = $state(0);
 let totalGenCost = $state(0);
+
+// 主动沉浸
+let immersionEnabled = $state(false);
+let nudgeTimer: ReturnType<typeof setTimeout> | null = null;
+const NUDGE_DELAY_MS = 35000;
 
 // 队列轮询：itemId → messageIndex
 let pendingItemIds = $state<Map<number, number>>(new Map());
@@ -146,6 +154,7 @@ async function sendMessage() {
 	if (!systemPrompt.trim()) { errorText = '请先填写角色设定'; return; }
 	if (!workflowPath) { errorText = '请先在文生图页选择工作流'; return; }
 	errorText = ''; sending = true;
+	cancelNudge();
 
 	chatMessages = [...chatMessages, { role: 'user', content: msg }];
 	inputText = '';
@@ -225,6 +234,7 @@ async function sendMessage() {
 		if (!assistantMsg?.pendingImages?.length) {
 			try { await appendChatHistory([{ role: 'assistant', content: fullText }]); } catch {}
 		}
+		startNudgeTimer();
 	} catch (e: any) {
 		chatMessages = chatMessages.map((m, i) =>
 			i === assistantIdx ? { ...m, content: `❌ ${e.message || '请求失败'}`, streaming: false } : m
@@ -288,7 +298,91 @@ function startQueuePolling() {
 
 function stopQueuePolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
-function handleKeydown(e: KeyboardEvent) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+// --- 主动沉浸 ---
+
+function cancelNudge() { if (nudgeTimer) { clearTimeout(nudgeTimer); nudgeTimer = null; } }
+
+function startNudgeTimer() {
+	cancelNudge();
+	if (!immersionEnabled) return;
+	nudgeTimer = setTimeout(() => sendNudge(), NUDGE_DELAY_MS);
+}
+
+async function sendNudge() {
+	if (!systemPrompt.trim() || chatMessages.length === 0) return;
+	const baseUrl = get(drawEnv.baseUrl);
+	const token = forumAuth.getToken();
+	if (!token) return;
+	const body = JSON.stringify({
+		system_prompt: systemPrompt,
+		workflow_prompt: directPrompt || '',
+		negative_prompt: negativePrompt || '',
+		history: chatHistory.slice(-20),
+		mode,
+	});
+
+	try {
+		const resp = await fetch(baseUrl + '/api/draw/chat/nudge', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+			body,
+		});
+		if (!resp.ok) return;
+		const nudgeIdx = chatMessages.length;
+		chatMessages = [...chatMessages, { role: 'assistant', content: '', streaming: true, imageUrls: [], pendingImages: [] }];
+		const reader = resp.body?.getReader();
+		if (!reader) return;
+		const decoder = new TextDecoder();
+		let buf = '', textContent = '', fullText = '';
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			buf += decoder.decode(value, { stream: true });
+			while (true) {
+				const nl = buf.indexOf('\n');
+				if (nl === -1) break;
+				const line = buf.slice(0, nl).trim();
+				buf = buf.slice(nl + 1);
+				if (line.startsWith('event: ')) {
+					const evt = line.slice(7).trim();
+					const dn = buf.indexOf('\n');
+					if (dn === -1) { buf = line + '\n' + buf; break; }
+					const dl = buf.slice(0, dn).trim();
+					buf = buf.slice(dn + 1);
+					if (dl.startsWith('data: ')) {
+						try {
+							const d = JSON.parse(dl.slice(6));
+							if (evt === 'text' && d.content) {
+								textContent += d.content;
+								chatMessages = chatMessages.map((m, i) => i === nudgeIdx ? { ...m, content: textContent, streaming: true } : m);
+							} else if (evt === 'gen_tags' && genEnabled && d.tags?.length) {
+								for (const tags of d.tags) { await submitGenJob(tags, nudgeIdx); }
+							} else if (evt === 'error') {
+								textContent += `\n❌ ${d.message}`;
+								chatMessages = chatMessages.map((m, i) => i === nudgeIdx ? { ...m, content: textContent } : m);
+							} else if (evt === 'done') {
+								if (d.raw_text) fullText = d.raw_text;
+							}
+						} catch {}
+					}
+				}
+			}
+		}
+		chatMessages = chatMessages.map((m, i) => i === nudgeIdx ? { ...m, streaming: false } : m);
+		chatHistory = [...chatHistory, { role: 'assistant', content: fullText }];
+		if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
+		try {
+			const { appendChatHistory: ach } = await import('$lib/draw/api/client');
+			await ach([{ role: 'assistant', content: fullText }]);
+		} catch {}
+		if (immersionEnabled) startNudgeTimer();
+	} catch {}
+}
+
+function handleKeydown(e: KeyboardEvent) {
+	if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
 
 let chatContainer: HTMLDivElement | undefined;
 $effect(() => {
@@ -389,6 +483,10 @@ $effect(() => {
 			<button class="flex items-center gap-1 px-2 text-xs transition-colors {genEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}" onclick={() => genEnabled = !genEnabled} title={genEnabled ? '生图已开启，点击关闭' : '生图已关闭，点击开启'}>
 				<Icon icon="mdi:image-outline" class="size-4" />
 				<span class="hidden sm:inline">{genEnabled ? '生图' : '纯聊'}</span>
+			</button>
+			<button class="flex items-center gap-1 px-2 text-xs transition-colors {immersionEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}" onclick={() => { immersionEnabled = !immersionEnabled; if (!immersionEnabled) cancelNudge(); }} title={immersionEnabled ? '主动沉浸已开启，角色会自动推动对话' : '主动沉浸已关闭，角色等待回复'}>
+				<Icon icon="mdi:autorenew" class="size-4" />
+				<span class="hidden sm:inline">主动</span>
 			</button>
 		</div>
 		<input type="text" class="flex-1 h-9 text-sm border rounded px-3 bg-background" placeholder={genEnabled ? '输入消息，AI 会边聊边生图...' : '输入消息...'} bind:value={inputText} onkeydown={handleKeydown} disabled={sending} />
