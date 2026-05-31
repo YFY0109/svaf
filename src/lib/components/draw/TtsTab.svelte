@@ -86,9 +86,15 @@ async function handlePresetSubmit() {
 	submitting = true;
 	try {
 		const res = await generateTtsCustomVoice({ text: targetText, speaker: selectedSpeaker, language, instruct: instruct || undefined });
-		resultId = res.item_id;
-		resultUrl = getTtsRecordDownloadUrl(res.item_id);
-		done = true;
+		queueItemId = res.item_id;
+		queueStatus = 'pending';
+		if (res.queued) {
+			pollTimer = setInterval(pollStatus, 2000);
+		} else {
+			resultUrl = getTtsRecordDownloadUrl(res.item_id);
+			resultId = res.item_id;
+			done = true;
+		}
 	} catch (e: unknown) {
 		error = e instanceof Error ? e.message : '提交失败';
 	} finally {

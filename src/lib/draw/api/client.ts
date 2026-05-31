@@ -479,7 +479,7 @@ export async function fetchTtsSpeakers() {
 }
 
 export async function generateTtsCustomVoice(data: { text: string; speaker: string; language?: string; instruct?: string }) {
-	return drawRequest<{ ok: boolean; item_id: number; output_path: string }>('/api/draw/tts/custom-voice', {
+	return drawRequest<{ queued: boolean; item_id: number; position: number }>('/api/draw/tts/custom-voice', {
 		method: 'POST',
 		json: data,
 		requiresAuth: true,
