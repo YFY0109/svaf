@@ -437,6 +437,13 @@ export async function fetchTtsStatus(id: number) {
 	);
 }
 
+export async function fetchTtsMyQueue() {
+	return drawRequest<{ items: Array<{ id: number; status: string; created_at: number; started_at?: number; finished_at?: number; error?: string; position?: number | null }> }>(
+		'/api/draw/tts/my-queue',
+		{ requiresAuth: true }
+	);
+}
+
 export function getTtsResultUrl(id: number): string {
 	const token = forumAuth.getToken();
 	const baseUrl = get(drawEnv.baseUrl);

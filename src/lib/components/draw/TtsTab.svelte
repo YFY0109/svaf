@@ -4,8 +4,9 @@ import { Button } from '$lib/components/ui/button';
 import { Label } from '$lib/components/ui/label';
 import { Alert, AlertDescription } from '$lib/components/ui/alert';
 import { forumAuth } from '$lib/forum/stores/auth';
-import { generateTts, fetchTtsStatus, getTtsResultUrl } from '$lib/draw/api/client';
+import { generateTts, fetchTtsStatus, getTtsResultUrl, fetchTtsMyQueue } from '$lib/draw/api/client';
 import { Badge } from '$lib/components/ui/badge';
+import { onMount } from 'svelte';
 
 let { ttsPerChar = 0.01, ttsPerSec = 0.033, ttsMin = 1 }: { ttsPerChar?: number; ttsPerSec?: number; ttsMin?: number } = $props();
 
@@ -101,6 +102,24 @@ function handleReset() {
 	done = false;
 	error = '';
 }
+
+onMount(async () => {
+	try {
+		const res = await fetchTtsMyQueue();
+		const active = res.items.filter(i => i.status === 'pending' || i.status === 'running');
+		if (active.length > 0) {
+			const latest = active[0];
+			queueItemId = latest.id;
+			queueStatus = latest.status;
+			queuePosition = latest.position ?? null;
+			pollTimer = setInterval(pollStatus, 2000);
+			if (latest.status === 'done') {
+				resultUrl = getTtsResultUrl(latest.id);
+				done = true;
+			}
+		}
+	} catch {}
+});
 
 function statusLabel(s: string): string {
 	switch (s) {
