@@ -485,6 +485,7 @@ $effect(() => {
   async function handleAddSelectedToFeatured() {
     const paths = [...selectedPaths];
     if (!paths.length) return;
+    if (loading) return;
     loading = true;
     try {
       await Promise.all(paths.map((p) => admin.addFeatured(p)));
