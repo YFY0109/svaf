@@ -1053,7 +1053,7 @@ function formatTime(ts: number) {
           <div class="flex gap-2 items-start">
             {#each imgColumns as col, ci (ci)}
               <div class="flex flex-1 flex-col gap-2 min-w-0">
-                {#each col as path (ci + '-' + path)}
+                {#each col as path, i (ci + '-' + i + '-' + path)}
                   {@const img = recentImages.find(i => i.path === path)}
                   {#if img}
                     <div class="relative group">
@@ -1277,7 +1277,7 @@ function formatTime(ts: number) {
               <div class="flex gap-2 items-start">
                 {#each featColumns as col, ci (ci)}
                   <div class="flex flex-1 flex-col gap-2 min-w-0">
-                    {#each col as path (ci + '-' + path)}
+                    {#each col as path, i (ci + '-' + i + '-' + path)}
                       <div class="relative group rounded-md overflow-hidden border cursor-pointer {featSelectMode && featSelectedPaths.has(path) ? 'ring-2 ring-primary' : ''}" role="button" tabindex="0" onclick={() => { if (featSelectMode) featToggleSelect(path); else openLb(path); }}>
                         <img src={getImageProxyUrl(path)} alt={path} loading="lazy" decoding="async" style="aspect-ratio: 1;" onload={handleImgLoad} class="block w-full h-auto bg-muted" />
                         {#if featSelectMode}
@@ -1389,7 +1389,7 @@ function formatTime(ts: number) {
               <div class="flex gap-2 items-start">
                 {#each nomImgColumns as col, ci (ci)}
                   <div class="flex flex-1 flex-col gap-2 min-w-0">
-                    {#each col as path (ci + '-' + path)}
+                    {#each col as path, i (ci + '-' + i + '-' + path)}
                       {@const item = nomMasonryItems.find((i: any) => i.path === path)}
                       {#if item}
                         <div class="border rounded-lg overflow-hidden">

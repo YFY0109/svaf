@@ -1066,7 +1066,7 @@ async function startGeneration(mode = 'wai') {
               <div class="flex gap-2 items-start">
                 {#each imgColumns as col, ci (ci)}
                   <div class="flex flex-1 flex-col gap-2 min-w-0">
-                    {#each col as path (ci + '-' + path)}
+                    {#each col as path, i (ci + '-' + i + '-' + path)}
                       {@const item = myImages.find(i => i.path === path)}
                       {#if item}
                         <div role="button" tabindex="0" class="group relative rounded-md overflow-hidden border hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer {selectedPaths.has(item.path) ? 'ring-2 ring-primary' : ''}"
