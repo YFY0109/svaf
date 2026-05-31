@@ -7,10 +7,14 @@ import { forumAuth } from '$lib/forum/stores/auth';
 import { generateTts, fetchTtsStatus, getTtsResultUrl } from '$lib/draw/api/client';
 import { Badge } from '$lib/components/ui/badge';
 
-let { pointsCostSubmit = 0 }: { pointsCostSubmit?: number } = $props();
+let { ttsPerChar = 0.01, ttsPerSec = 0.033 }: { ttsPerChar?: number; ttsPerSec?: number } = $props();
 
 let audioFile = $state<File | null>(null);
 let audioUrl = $state('');
+let audioDuration = $state(0);
+
+let estimatedCost = $derived(Math.max(1, Math.ceil(targetText.length * ttsPerChar) + Math.ceil(audioDuration * ttsPerSec)));
+let costLabel = $derived(estimatedCost > 0 ? `⚡${estimatedCost}~` : '');
 let refText = $state('');
 let targetText = $state('');
 let xVectorMode = $state(false);
@@ -31,6 +35,10 @@ function handleFileSelect(e: Event) {
 	if (!file) return;
 	audioFile = file;
 	audioUrl = URL.createObjectURL(file);
+	const temp = new Audio(audioUrl);
+	temp.addEventListener('loadedmetadata', () => {
+		audioDuration = temp.duration;
+	}, { once: true });
 }
 
 async function handleSubmit() {
@@ -48,6 +56,7 @@ async function handleSubmit() {
 		if (refText) fd.append('ref_text', refText);
 		fd.append('x_vector_mode', String(xVectorMode));
 		fd.append('language', language);
+		fd.append('audio_duration', String(audioDuration));
 		const res = await generateTts(fd);
 		queueItemId = res.item_id;
 		queueStatus = 'pending';
@@ -168,8 +177,8 @@ function statusLabel(s: string): string {
 	<Button onclick={handleSubmit} disabled={submitting || !audioFile || !targetText || !!queueItemId} class="w-full">
 		<Icon icon="mdi:send" class="size-4 mr-1" />
 		{submitting ? '提交中...' : queueItemId ? '已加入队列' : '开始转换'}
-		{#if pointsCostSubmit > 0}
-			<Badge variant="secondary" class="ml-1.5 text-[10px] px-1">⚡{pointsCostSubmit}</Badge>
+		{#if !queueItemId && estimatedCost > 0}
+			<Badge variant="secondary" class="ml-1.5 text-[10px] px-1">{costLabel}</Badge>
 		{/if}
 	</Button>
 

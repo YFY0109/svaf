@@ -38,7 +38,7 @@ import { clearMyImages } from '$lib/draw/api/client';
 	let rechargeOpen = $state(false);
 	let recharging = $state(false);
 	let plans = $state<Array<{ id: string; name: string; url: string; points: number }>>([]);
-	let pointsConfig = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number; text_to_image_anima: number; tts_generate: number } | null>(null);
+	let pointsConfig = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; signup_bonus: number; text_to_image_anima: number; tts_generate: number; tts_per_char: number; tts_per_sec: number } | null>(null);
 	let walletTimer: ReturnType<typeof setInterval> | null = null;
 	let waiHelpOpen = $state(false);
 	let animaHelpOpen = $state(false);
@@ -948,7 +948,7 @@ async function startGeneration(mode = 'wai') {
 					<SaloonTab {workflowPath} {styleTags} {negativePrompt} {directPrompt} {width} {height} {turnstileToken} pointsCostSubmit={selectedMode === 'anima' ? (pointsConfig?.text_to_image_anima ?? 20) : (pointsConfig?.text_to_image ?? 0)} mode={selectedMode} />
 				</TabsContent>
 				<TabsContent value="tts" class="mt-4">
-					<TtsTab pointsCostSubmit={pointsConfig?.tts_generate ?? 0} />
+					<TtsTab ttsPerChar={pointsConfig?.tts_per_char ?? 0.01} ttsPerSec={pointsConfig?.tts_per_sec ?? 0.033} />
 				</TabsContent>
 
 			</Tabs>
