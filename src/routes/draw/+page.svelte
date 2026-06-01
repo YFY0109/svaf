@@ -42,7 +42,6 @@ import { clearMyImages } from '$lib/draw/api/client';
   let pointsConfig = $state<{ text_to_image: number; image_to_image: number; llm_translate: number; llm_token_per_point: number; signup_bonus: number; text_to_image_anima: number; text_to_image_real: number; tts_generate: number; tts_per_char: number; tts_per_sec: number } | null>(null);
   let walletTimer: ReturnType<typeof setInterval> | null = null;
   let waiHelpOpen = $state(false);
-  let realHelpOpen = $state(false);
   let animaHelpOpen = $state(false);
   let ernieHelpOpen = $state(false);
   let saloonHelpOpen = $state(false);
