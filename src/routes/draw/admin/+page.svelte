@@ -1819,7 +1819,7 @@ function formatTime(ts: number) {
           </CardContent>
         </Card>
       </TabsContent>
-</div>
+    </Tabs>
 
 <ImageLightbox
   open={lbOpen}
