@@ -19,12 +19,16 @@ import { Badge } from '$lib/components/ui/badge';
     pointsCostSubmit = 0,
     llmTokenPerPoint = 0,
     turnstileEnabled = true,
+    maxImages = 2,
+    workflowPath = '',
   }: {
     turnstileToken?: string;
       turnstileTick?: number;
     pointsCostSubmit?: number;
     llmTokenPerPoint?: number;
     turnstileEnabled?: boolean;
+    maxImages?: number;
+    workflowPath?: string;
   } = $props();
 
   let currentBaseUrl = $state('');
@@ -176,7 +180,7 @@ import { Badge } from '$lib/components/ui/badge';
     const input = e.target as HTMLInputElement;
     if (!input.files?.length) return;
     const newFiles = Array.from(input.files);
-    const remaining = 2 - images.length;
+    const remaining = maxImages - images.length;
     if (remaining <= 0) return;
     const added = newFiles.slice(0, remaining);
     let loaded = 0;
@@ -233,7 +237,7 @@ import { Badge } from '$lib/components/ui/badge';
     enPrompt = (e.target as HTMLTextAreaElement).value;
     saveState();
   }
-  async function doUpload(): Promise<{ image1_name: string; image2_name: string }> {
+  async function doUpload(): Promise<{ image1_name: string; image2_name?: string; image3_name?: string }> {
     const token = forumAuth.getToken()!;
     const form = new FormData();
     const compressed1 = await compressPostImage(images[0].file);
@@ -279,12 +283,15 @@ import { Badge } from '$lib/components/ui/badge';
 
     try {
       const uploadData = await doUpload();
-      await addToQueue({
+      const queuePayload: any = {
         direct_prompt: enPrompt.trim() || cnPrompt.trim(),
         image1_name: uploadData.image1_name,
-        image2_name: uploadData.image2_name || '',
-          turnstile_token: turnstileToken || undefined,
-      });
+        turnstile_token: turnstileToken || undefined,
+      };
+      if (uploadData.image2_name) queuePayload.image2_name = uploadData.image2_name;
+      if (uploadData.image3_name) queuePayload.image3_name = uploadData.image3_name;
+      if (workflowPath) queuePayload.workflow_path = workflowPath;
+      await addToQueue(queuePayload);
       uploading = false;
         turnstileTick++;
       queueSuccess = '成功加入队列！等待生图中，前往"我的"页面查看详情。';
@@ -318,7 +325,7 @@ import { Badge } from '$lib/components/ui/badge';
       <h3 class="text-sm font-medium flex items-center gap-1.5">
         <Icon icon="mdi:image-plus" class="size-4" />
         上传图片
-        <Badge variant="secondary" class="text-xs">{images.length}/2</Badge>
+        <Badge variant="secondary" class="text-xs">{images.length}/{maxImages}</Badge>
       </h3>
       {#if images.length > 1}
         <span class="text-xs text-muted-foreground">拖拽调整顺序</span>
@@ -360,10 +367,10 @@ import { Badge } from '$lib/components/ui/badge';
         </div>
       {/each}
 
-      {#if images.length < 2}
+      {#if images.length < maxImages}
         <label class="size-28 rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors text-muted-foreground">
           <Icon icon="mdi:plus" class="size-6" />
-          <span class="text-xs">{images.length === 0 ? '选择图片' : '第二张'}</span>
+          <span class="text-xs">{images.length === 0 ? '选择图片' : '上传更多'}</span>
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp"

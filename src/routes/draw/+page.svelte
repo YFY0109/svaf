@@ -216,6 +216,7 @@ import { clearMyImages } from '$lib/draw/api/client';
   let activeTab = $state(location.hash?.slice(1) || 'generate');
   let genSubTab = $state(location.hash?.includes('img2img') ? 'img2img' : location.hash?.includes('saloon') ? 'saloon' : location.hash?.includes('tts') ? 'tts' : 'txt2img');
   let genTxtSubTab = $state((typeof localStorage !== 'undefined' && localStorage.getItem('draw-txt-sub-tab')) || 'wai');
+  let imgSubTab = $state('flux2');
   let selectedMode = $state((typeof localStorage !== 'undefined' && localStorage.getItem('draw-txt-sub-tab')) || 'wai');
 
   $effect(() => {
@@ -981,7 +982,18 @@ async function startGeneration(mode = 'wai') {
         </TabsContent>
 
         <TabsContent value="img2img" class="mt-4">
-          <Img2imgTab bind:turnstileToken bind:turnstileTick llmTokenPerPoint={pointsConfig?.llm_token_per_point} pointsCostSubmit={pointsConfig?.image_to_image} turnstileEnabled={pointsConfig?.turnstile_enabled} />
+          <Tabs bind:value={imgSubTab} class="w-full">
+            <TabsList class="w-full flex flex-wrap gap-1">
+              <TabsTrigger value="flux2" class="text-xs">Flux2</TabsTrigger>
+              <TabsTrigger value="qwen" class="text-xs">Qwen</TabsTrigger>
+            </TabsList>
+            <TabsContent value="flux2" class="mt-4">
+              <Img2imgTab bind:turnstileToken bind:turnstileTick llmTokenPerPoint={pointsConfig?.llm_token_per_point} pointsCostSubmit={pointsConfig?.image_to_image} turnstileEnabled={pointsConfig?.turnstile_enabled} />
+            </TabsContent>
+            <TabsContent value="qwen" class="mt-4">
+              <Img2imgTab bind:turnstileToken bind:turnstileTick llmTokenPerPoint={pointsConfig?.llm_token_per_point} pointsCostSubmit={pointsConfig?.image_to_image} turnstileEnabled={pointsConfig?.turnstile_enabled} maxImages={3} workflowPath="Qwen/qwen2511_lowvram.json" />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="saloon" class="mt-4">
