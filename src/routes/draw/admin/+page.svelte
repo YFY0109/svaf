@@ -1432,10 +1432,11 @@ function formatTime(ts: number) {
             <Button size="sm" onclick={loadCredits} disabled={loading}>刷新</Button>
             <div class="flex flex-wrap items-center gap-2 text-xs">
               <span class="font-medium">消耗配置</span>
-              <label class="flex items-center gap-1">文生图 <input type="number" bind:value={pointsCfg.text_to_image} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
-              <label class="flex items-center gap-1">图生图 <input type="number" bind:value={pointsCfg.image_to_image} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
+              <label class="flex items-center gap-1">WAI <input type="number" bind:value={pointsCfg.text_to_image} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
               <label class="flex items-center gap-1">Anima <input type="number" bind:value={pointsCfg.text_to_image_anima} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
               <label class="flex items-center gap-1">Ernie <input type="number" bind:value={pointsCfg.text_to_image_ernie} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
+              <label class="flex items-center gap-1">RedZI <input type="number" bind:value={pointsCfg.text_to_image_real} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
+              <label class="flex items-center gap-1">Flux2 <input type="number" bind:value={pointsCfg.image_to_image} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
               <label class="flex items-center gap-1">Qwen <input type="number" bind:value={pointsCfg.image_to_image_qwen} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
               <label class="flex items-center gap-1">LLM token/点 <input type="number" bind:value={pointsCfg.llm_token_per_point} class="w-20 h-7 px-2 rounded border bg-transparent text-xs" title="每N个token扣1点" /></label>
               <label class="flex items-center gap-1">TTS 保底 <input type="number" bind:value={pointsCfg.tts_generate} class="w-16 h-7 px-2 rounded border bg-transparent text-xs" /></label>
