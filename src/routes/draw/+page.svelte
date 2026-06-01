@@ -1035,9 +1035,9 @@ async function startGeneration(mode = 'wai') {
                 </div>
               {/each}
             </div>
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium flex items-center gap-1.5"><Icon icon="mdi:account-outline" class="size-4" />我的图片 <span class="text-xs text-muted-foreground whitespace-nowrap">({myImages.length}/{myImagesTotal})</span></h3>
-              <div class="flex items-center gap-1">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <h3 class="text-sm font-medium flex items-center gap-1.5 shrink-0"><Icon icon="mdi:account-outline" class="size-4" />我的图片 <span class="text-xs text-muted-foreground whitespace-nowrap">({myImages.length}/{myImagesTotal})</span></h3>
+              <div class="flex items-center gap-1 flex-wrap">
                 <button onclick={() => { myImagesLoaded = false; loadMyImages(); }} class="size-7 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" title="刷新"><Icon icon="mdi:refresh" class="size-3.5" /></button>
                 <Button variant={selectMode ? 'default' : 'outline'} size="sm" onclick={() => { selectMode = !selectMode; if (!selectMode) selectedPaths = new Set(); }}>
                   <Icon icon="mdi:checkbox-multiple-marked-outline" class="size-3.5 mr-1" />{selectMode ? '取消' : '选择'}
