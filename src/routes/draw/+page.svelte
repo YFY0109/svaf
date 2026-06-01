@@ -906,7 +906,7 @@ async function startGeneration(mode = 'wai') {
               <TabsTrigger value="anima" class="text-xs" onclick={() => { genTxtSubTab = 'anima'; workflowPath = ''; }}>Anima
                 <button onclick={(e) => { e.stopPropagation(); animaHelpOpen = true; }} class="inline-flex items-center justify-center size-4 rounded-full border border-muted-foreground/40 text-muted-foreground text-[10px] font-bold ml-1 hover:border-primary hover:text-primary transition-colors" title="关于 Anima">?</button>
               </TabsTrigger>
-              <TabsTrigger value="real" class="text-xs" onclick={() => { genTxtSubTab = 'real'; workflowPath = 'ZImage/RedAIO.json'; directPrompt = ''; workflowPrompt = ''; negativePrompt = ''; workflowNegativePrompt = ''; nlPrompt = ''; }}>真人
+              <TabsTrigger value="real" class="text-xs" onclick={() => { genTxtSubTab = 'real'; workflowPath = 'ZImage/RedAIO.json'; directPrompt = ''; workflowPrompt = ''; negativePrompt = ''; workflowNegativePrompt = ''; nlPrompt = ''; }}>RedZI
               </TabsTrigger>
             </TabsList>
 
@@ -1285,10 +1285,10 @@ async function startGeneration(mode = 'wai') {
 <Dialog.Root open={realHelpOpen} onOpenChange={(o) => realHelpOpen = o}>
   <Dialog.Content class="max-w-md">
     <Dialog.Header>
-      <Dialog.Title>ℹ️ 关于 真人</Dialog.Title>
+      <Dialog.Title>ℹ️ 关于 RedZI</Dialog.Title>
       <Dialog.Description class="text-sm leading-relaxed">
         <div class="space-y-2">
-          <div>基于 <strong>RedAIO</strong> 工作流的真人/写实风格文生图。</div>
+          <div>基于 <strong>RedAIO</strong> 工作流的RedZI/写实风格文生图。</div>
           <div>使用 <strong>英文提示词</strong> 可以获得更好的效果。</div>
           <div><strong>不会写英文？</strong>在「自然语言描述」写中文，点「转换」即可。</div>
         </div>
