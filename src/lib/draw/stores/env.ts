@@ -133,17 +133,24 @@ export async function resolveApiRedirect(force = false): Promise<void> {
   if (!force && now - _redirectFailAt < REDIRECT_COOLDOWN) return;
   apiStatus.set('checking');
   const baseUrl = get(drawEnv.baseUrl);
+  console.log(`[resolveApiRedirect] probing ${baseUrl}/health`);
   try {
     const resp = await fetch(`${baseUrl}/health`, { method: 'GET' });
-    if (!resp.ok) throw new Error('health check failed');
+    console.log(`[resolveApiRedirect] response status=${resp.status} url=${resp.url}`);
+    if (!resp.ok) { console.log(`[resolveApiRedirect] not ok`); throw new Error('health check failed'); }
     const finalUrl = resp.url.replace(/\/+$/, '').replace(/\/health$/, '');
+    console.log(`[resolveApiRedirect] baseUrl=${baseUrl} finalUrl=${finalUrl}`);
     if (finalUrl !== baseUrl && finalUrl.startsWith('http')) {
+      console.log(`[resolveApiRedirect] redirect detected, updating base url to ${finalUrl}`);
       drawEnv.customBaseUrl.set(finalUrl);
+    } else {
+      console.log(`[resolveApiRedirect] no redirect, using ${baseUrl}`);
     }
     _redirectResolved = true;
     apiStatus.set('online');
     apiError.set(null);
   } catch {
+    console.log(`[resolveApiRedirect] failed`);
     _redirectFailAt = Date.now();
     apiStatus.set('offline');
   }
