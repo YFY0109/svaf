@@ -135,7 +135,7 @@ export async function resolveApiRedirect(force = false): Promise<void> {
   const baseUrl = get(drawEnv.baseUrl);
   console.log(`[resolveApiRedirect] probing ${baseUrl}/health`);
   try {
-    const resp = await fetch(`${baseUrl}/health`, { method: 'GET' });
+    const resp = await fetch(`${baseUrl}/health?_t=${Date.now()}`, { method: 'GET' });
     console.log(`[resolveApiRedirect] response status=${resp.status} url=${resp.url}`);
     if (!resp.ok) { console.log(`[resolveApiRedirect] not ok`); throw new Error('health check failed'); }
     const finalUrl = resp.url.replace(/\/+$/, '').replace(/\/health$/, '');
