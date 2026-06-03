@@ -149,24 +149,30 @@ export async function resolveApiRedirect(force = false): Promise<void> {
     redirectLogs.set([]);
     apiStatus.set('checking');
     const baseUrl = get(drawEnv.baseUrl);
-    addRedirectLog(`检测 ${baseUrl}/health`);
+    const t0 = Date.now();
+    addRedirectLog(`[${(Date.now()-t0)}ms] 开始检测 ${baseUrl}/health`);
     try {
       const resp = await fetch(`${baseUrl}/health?_t=${Date.now()}`, { method: 'GET' });
-      addRedirectLog(`响应 status=${resp.status} url=${resp.url}`);
-      if (!resp.ok) { addRedirectLog(`不 OK`); throw new Error('health check failed'); }
+      addRedirectLog(`[${(Date.now()-t0)}ms] 响应 status=${resp.status} url=${resp.url}`);
+      // 读取响应体（最多 500 字符）
+      let body = '';
+      try { const clone = resp.clone(); body = await clone.text(); body = body.slice(0, 500); } catch {}
+      if (body) addRedirectLog(`[${(Date.now()-t0)}ms] 内容: ${body}`);
+      if (!resp.ok) { addRedirectLog(`[${(Date.now()-t0)}ms] 不 OK`); throw new Error('health check failed'); }
       const finalUrl = new URL(resp.url.replace(/\/health[\?&].*$/, '').replace(/\/health$/, '')).origin;
-      addRedirectLog(`原始=${baseUrl} 最终=${finalUrl}`);
+      addRedirectLog(`[${(Date.now()-t0)}ms] 原始=${baseUrl} 最终=${finalUrl}`);
       if (finalUrl !== baseUrl && finalUrl.startsWith('http')) {
-        addRedirectLog(`检测到重定向，切换为 ${finalUrl}`);
+        addRedirectLog(`[${(Date.now()-t0)}ms] 检测到重定向，切换为 ${finalUrl}`);
         drawEnv.customBaseUrl.set(finalUrl);
       } else {
-        addRedirectLog(`无重定向，使用 ${baseUrl}`);
+        addRedirectLog(`[${(Date.now()-t0)}ms] 无重定向，使用 ${baseUrl}`);
       }
       _redirectResolved = true;
       apiStatus.set('online');
       apiError.set(null);
-    } catch {
-      addRedirectLog(`失败`);
+      addRedirectLog(`[${(Date.now()-t0)}ms] API 在线`);
+    } catch (e: any) {
+      addRedirectLog(`[${(Date.now()-t0)}ms] 失败: ${e.message || ''}`);
       _redirectFailAt = Date.now();
       apiStatus.set('offline');
     } finally {
