@@ -178,6 +178,14 @@ import { fetchOutputMeta } from '$lib/draw/api/client';
 let expandedAudioId = $state<string | null>(null);
 let audioMeta = $state<Record<string, { prompt?: string; speaker?: string; language?: string }>>({});
 
+// TTS settings (shared between TtsTab and SaloonTab)
+let ttsMode = $state<'preset' | 'custom' | 'clone'>('preset');
+let ttsSpeaker = $state('mimo_default');
+let ttsInstruct = $state('');
+let ttsTargetText = $state('');
+let ttsLanguage = $state('auto');
+let ttsTags = $state('');
+
   // My images lightbox
   let myLbOpen = $state(false);
   let myLbIndex = $state(0);
@@ -1021,10 +1029,10 @@ async function startGeneration(mode = 'wai') {
         </TabsContent>
 
         <TabsContent value="saloon" class="mt-4">
-          <SaloonTab {workflowPath} {styleTags} {negativePrompt} {directPrompt} {width} {height} {turnstileToken} pointsCostSubmit={selectedMode === 'anima' ? (pointsConfig?.text_to_image_anima ) : (pointsConfig?.text_to_image )} mode={selectedMode} />
+          <SaloonTab {workflowPath} {styleTags} {negativePrompt} {directPrompt} {width} {height} {turnstileToken} pointsCostSubmit={selectedMode === 'anima' ? (pointsConfig?.text_to_image_anima ) : (pointsConfig?.text_to_image )} mode={selectedMode} {ttsMode} {ttsSpeaker} {ttsInstruct} {ttsTags} />
         </TabsContent>
         <TabsContent value="tts" class="mt-4">
-          <TtsTab ttsPerChar={pointsConfig?.tts_per_char} ttsPerSec={pointsConfig?.tts_per_sec} ttsMin={pointsConfig?.tts_generate} />
+          <TtsTab bind:ttsMode bind:ttsSpeaker bind:ttsInstruct bind:ttsTargetText bind:ttsLanguage bind:ttsTags ttsPerChar={pointsConfig?.tts_per_char} ttsPerSec={pointsConfig?.tts_per_sec} ttsMin={pointsConfig?.tts_generate} />
         </TabsContent>
         <TabsContent value="video" class="mt-4">
           <VideoTab />

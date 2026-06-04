@@ -3,7 +3,7 @@ import Icon from '@iconify/svelte';
 import { Button } from '$lib/components/ui/button';
 import { Alert, AlertDescription } from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
-import { chatRequest, addToQueue, fetchMyQueue, getImageProxyUrl, fetchChatPresets, saveChatPreset, deleteChatPreset, fetchChatHistory, appendChatHistory, clearChatHistory } from '$lib/draw/api/client';
+import { chatRequest, addToQueue, fetchMyQueue, getImageProxyUrl, getImageUrl, fetchChatPresets, saveChatPreset, deleteChatPreset, fetchChatHistory, appendChatHistory, clearChatHistory, drawRequest } from '$lib/draw/api/client';
 import { drawEnv } from '$lib/draw/stores/env';
 import { forumAuth } from '$lib/forum/stores/auth';
 import { get } from 'svelte/store';
@@ -19,6 +19,10 @@ let {
   turnstileToken = '',
   pointsCostSubmit = 0,
   mode = 'wai',
+  ttsMode = 'preset' as 'preset' | 'custom' | 'clone',
+  ttsSpeaker = 'mimo_default',
+  ttsInstruct = '',
+  ttsTags = '',
 }: {
   workflowPath?: string;
   styleTags?: string;
@@ -29,6 +33,10 @@ let {
   turnstileToken?: string;
   pointsCostSubmit?: number;
   mode?: string;
+  ttsMode?: 'preset' | 'custom' | 'clone';
+  ttsSpeaker?: string;
+  ttsInstruct?: string;
+  ttsTags?: string;
 } = $props();
 
 interface ChatPreset { id: string; name: string; systemPrompt: string; }
@@ -48,6 +56,31 @@ let selectedPresetIdx = $state<number>(-1);
 let presetName = $state('');
 let systemPrompt = $state('');
 let chatMessages = $state<ChatMessage[]>([]);
+let ttsLoading = $state<Record<number, boolean>>({});
+let ttsAudio = $state<Record<number, string>>({});
+
+async function speakMessage(idx: number, text: string) {
+  if (ttsLoading[idx]) return;
+  ttsLoading = { ...ttsLoading, [idx]: true };
+  ttsAudio = { ...ttsAudio, [idx]: '' };
+  try {
+    const res = await drawRequest<{ ok: boolean; filename: string }>('/api/draw/tts/synthesize', {
+      method: 'POST',
+      json: {
+        text,
+        mode: ttsMode,
+        speaker: ttsMode === 'preset' ? ttsSpeaker : undefined,
+        instruct: ttsInstruct || undefined,
+        tags: ttsTags || undefined,
+      },
+      requiresAuth: true,
+    });
+    if (res.ok && res.filename) {
+      ttsAudio = { ...ttsAudio, [idx]: getImageUrl(res.filename) };
+    }
+  } catch {}
+  ttsLoading = { ...ttsLoading, [idx]: false };
+}
 let chatHistory = $state<Array<{ role: string; content: string; imageUrls?: string[]; systemPrompt?: string }>>([]);
 let inputText = $state('');
 let sending = $state(false);
@@ -470,6 +503,23 @@ $effect(() => {
                   {/if}
                 </div>
               {/each}
+            </div>
+          {/if}
+
+          <!-- TTS 朗读 -->
+          {#if msg.role === 'assistant' && msg.content && !msg.streaming}
+            <div class="flex items-center gap-1 mt-1.5">
+              {#if ttsAudio[i]}
+                <audio src={ttsAudio[i]} controls class="h-8 max-w-[160px]" preload="none"></audio>
+                <button onclick={() => { ttsAudio = { ...ttsAudio, [i]: '' }; }} class="size-6 flex items-center justify-center rounded hover:bg-background/20 shrink-0" title="关闭">
+                  <Icon icon="mdi:close" class="size-3.5" />
+                </button>
+              {:else}
+                <button onclick={() => speakMessage(i, msg.content)} disabled={ttsLoading[i]} class="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">
+                  <Icon icon={ttsLoading[i] ? 'mdi:loading' : 'mdi:volume-high'} class="size-3.5 {ttsLoading[i] ? 'animate-spin' : ''}" />
+                  {ttsLoading[i] ? '合成中...' : '朗读'}
+                </button>
+              {/if}
             </div>
           {/if}
         </div>

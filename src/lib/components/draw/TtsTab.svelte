@@ -7,40 +7,67 @@ import { forumAuth } from '$lib/forum/stores/auth';
 import { getImageUrl, uploadTtsRefAudio, drawRequest } from '$lib/draw/api/client';
 import { Badge } from '$lib/components/ui/badge';
 import { onMount } from 'svelte';
+
+const TTS_STORAGE_KEY = 'tts-form';
+function loadTtsForm(): Record<string, any> {
+  try { return JSON.parse(localStorage.getItem(TTS_STORAGE_KEY) || '{}'); } catch { return {}; }
+}
+function saveTtsForm(v: Record<string, any>) {
+  try { localStorage.setItem(TTS_STORAGE_KEY, JSON.stringify(v)); } catch {}
+}
+
+type TtsMode = 'preset' | 'custom' | 'clone';
+
 let {
+  ttsMode = $bindable<TtsMode>('preset'),
+  ttsSpeaker = $bindable('mimo_default'),
+  ttsInstruct = $bindable(''),
+  ttsTargetText = $bindable(''),
+  ttsLanguage = $bindable('auto'),
+  ttsTags = $bindable(''),
   ttsPerChar = 0.01, ttsPerSec = 0.033, ttsMin = 1,
 }: {
+  ttsMode?: TtsMode;
+  ttsSpeaker?: string;
+  ttsInstruct?: string;
+  ttsTargetText?: string;
+  ttsLanguage?: string;
+  ttsTags?: string;
   ttsPerChar?: number;
   ttsPerSec?: number;
   ttsMin?: number;
 } = $props();
 
-type TtsMode = 'preset' | 'custom' | 'clone';
-let mode = $state<TtsMode>('preset');
-
 // Preset mode
 let speakers = $state<Array<{ id: string; description: string }>>([]);
-let selectedSpeaker = $state('Vivian');
-
-// Clone & Custom mode
-let instruct = $state('');
 
 // Audio upload (clone only)
 let audioFile = $state<File | null>(null);
 let audioUrl = $state('');
 
 // Shared
-let targetText = $state('');
-let language = $state('auto');
 let submitting = $state(false);
 let error = $state('');
-let audioTags = $state('');
 
 let resultUrl = $state('');
 let done = $state(false);
 
-let estimatedCost = $derived(Math.max(ttsMin, Math.ceil(targetText.length * ttsPerChar)));
+let estimatedCost = $derived(Math.max(ttsMin, Math.ceil((ttsTargetText || '').length * ttsPerChar)));
 let costLabel = $derived(estimatedCost > 0 ? `⚡${estimatedCost}~` : '');
+
+// localStorage 恢复
+const saved = loadTtsForm();
+if (saved.mode) ttsMode = saved.mode;
+if (saved.speaker) ttsSpeaker = saved.speaker;
+if (saved.instruct !== undefined) ttsInstruct = saved.instruct;
+if (saved.targetText) ttsTargetText = saved.targetText;
+if (saved.language) ttsLanguage = saved.language;
+if (saved.tags) ttsTags = saved.tags;
+
+// 状态变化时保存
+$effect(() => {
+  saveTtsForm({ mode: ttsMode, speaker: ttsSpeaker, instruct: ttsInstruct, targetText: ttsTargetText, language: ttsLanguage, tags: ttsTags });
+});
 
 function handleFileSelect(e: Event) {
   const input = e.target as HTMLInputElement;
@@ -51,23 +78,23 @@ function handleFileSelect(e: Event) {
 }
 
 async function handleSubmit() {
-  if (submitting || !targetText) return;
+  if (submitting || !ttsTargetText) return;
   error = '';
   submitting = true;
   try {
     let refName = undefined;
-    if (mode === 'clone' && audioFile) {
+    if (ttsMode === 'clone' && audioFile) {
       const uploadRes = await uploadTtsRefAudio(audioFile);
       refName = uploadRes.filename;
     }
     const res = await drawRequest<{ ok: boolean; filename: string; cost: number }>('/api/draw/tts/synthesize', {
       method: 'POST',
       json: {
-        text: targetText,
-        mode: mode,
-        speaker: mode === 'preset' ? selectedSpeaker : undefined,
-        instruct: instruct || undefined,
-        tags: audioTags || undefined,
+        text: ttsTargetText,
+        mode: ttsMode,
+        speaker: ttsMode === 'preset' ? ttsSpeaker : undefined,
+        instruct: ttsInstruct || undefined,
+        tags: ttsTags || undefined,
         ref_audio_name: refName,
       },
       requiresAuth: true,
@@ -103,7 +130,6 @@ const PRESET_VOICES = [
 
 onMount(async () => {
   speakers = PRESET_VOICES;
-  if (speakers.length > 0) selectedSpeaker = speakers[0].id;
 });
 
 </script>
@@ -116,16 +142,16 @@ onMount(async () => {
 
   <!-- Mode Toggle -->
   <div class="flex gap-2">
-    <button onclick={() => { mode = 'preset'; handleReset(); }} class="px-3 py-1.5 text-xs rounded-lg border {mode === 'preset' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">预设音色</button>
-    <button onclick={() => { mode = 'custom'; handleReset(); }} class="px-3 py-1.5 text-xs rounded-lg border {mode === 'custom' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">自定义音色</button>
-    <button onclick={() => { mode = 'clone'; handleReset(); }} class="px-3 py-1.5 text-xs rounded-lg border {mode === 'clone' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">声音克隆</button>
+    <button onclick={() => { ttsMode = 'preset'; handleReset(); }} class="px-3 py-1.5 text-xs rounded-lg border {ttsMode === 'preset' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">预设音色</button>
+    <button onclick={() => { ttsMode = 'custom'; handleReset(); }} class="px-3 py-1.5 text-xs rounded-lg border {ttsMode === 'custom' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">自定义音色</button>
+    <button onclick={() => { ttsMode = 'clone'; handleReset(); }} class="px-3 py-1.5 text-xs rounded-lg border {ttsMode === 'clone' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">声音克隆</button>
   </div>
 
-  {#if mode === 'preset'}
+  {#if ttsMode === 'preset'}
     <!-- Preset Voice -->
     <div class="space-y-1.5">
       <Label for="tts-speaker">预制音色</Label>
-      <select id="tts-speaker" bind:value={selectedSpeaker} class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs">
+      <select id="tts-speaker" bind:value={ttsSpeaker} class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs">
         {#each speakers as sp}
           <option value={sp.id}>{sp.id} — {sp.description}</option>
         {/each}
@@ -133,15 +159,15 @@ onMount(async () => {
     </div>
     <div class="space-y-1.5">
       <Label for="tts-instruct">风格指令 <span class="text-muted-foreground text-[10px]">(可选)</span></Label>
-      <input id="tts-instruct" bind:value={instruct} placeholder="用轻快上扬的语调，语速稍快，声音明亮有活力"
+      <input id="tts-instruct" bind:value={ttsInstruct} placeholder="用轻快上扬的语调，语速稍快，声音明亮有活力"
         class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground" />
       <div class="text-[10px] text-muted-foreground">支持在文本中嵌入标签：(开心)[语速加快][笑][叹气] 等</div>
     </div>
-  {:else if mode === 'custom'}
+  {:else if ttsMode === 'custom'}
     <!-- Custom Voice Design -->
     <div class="space-y-1.5">
       <Label for="tts-instruct-custom">音色描述 <span class="text-muted-foreground text-[10px]">(可选，支持导演模式)</span></Label>
-      <textarea id="tts-instruct-custom" bind:value={instruct} rows={3}
+      <textarea id="tts-instruct-custom" bind:value={ttsInstruct} rows={3}
         placeholder="【角色】五十多岁的中年男性，声音低沉浑厚
 【场景】深夜在书房给远方的儿子写信
 【指导】语速缓慢，带着慈爱与叮嘱，偶尔停顿思考"
@@ -180,52 +206,52 @@ onMount(async () => {
     <Label>音频标签 <span class="text-muted-foreground text-[10px]">(点击添加，自动嵌入合成文本开头)</span></Label>
     <div><span class="text-[9px] text-muted-foreground">基础情绪</span>
       {#each ['开心','悲伤','愤怒','恐惧','惊讶','兴奋','委屈','平静','冷漠'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">复合情绪</span>
       {#each ['怅然','欣慰','无奈','愧疚','释然','嫉妒','厌倦','忐忑','动情'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">整体语调</span>
       {#each ['温柔','高冷','活泼','严肃','慵懒','俏皮','深沉','干练','凌厉'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">音色定位</span>
       {#each ['磁性','醇厚','清亮','空灵','稚嫩','苍老','甜美','沙哑','醇雅'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">人设腔调</span>
       {#each ['夹子音','御姐音','正太音','大叔音','台湾腔'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">方言</span>
       {#each ['东北话','四川话','河南话','粤语'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">细粒度控制 <span class="text-muted-foreground/60">([标签] 格式嵌入文本中间)</span></span>
       {#each ['笑','轻笑','大笑','冷笑','抽泣','呜咽','哽咽','嚎啕大哭','紧张','害怕','激动','疲惫','委屈','撒娇','心虚','震惊','不耐烦','颤抖','声音颤抖','变调','破音','鼻音','气声','沙哑','吸气','深呼吸','叹气','长叹一口气','喘息','屏息','语速加快','语速减慢','小声'] as tag}
-        <button onclick={() => { const fmt = '['+tag+']'; audioTags = audioTags.includes(tag) ? audioTags.replace('['+tag+']','').trim() : audioTags + fmt }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { const fmt = '['+tag+']'; ttsTags = ttsTags.includes(tag) ? ttsTags.replace('['+tag+']','').trim() : ttsTags + fmt }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
     <div><span class="text-[9px] text-muted-foreground">特殊</span>
       {#each ['唱歌','孙悟空','林黛玉'] as tag}
-        <button onclick={() => { audioTags = audioTags.includes(tag) ? audioTags.replace('('+tag+')','').trim() : audioTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {audioTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
+        <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
-    <input bind:value={audioTags} placeholder="也可手动输入，多个标签直接拼接如(开心)[深呼吸]你好呀"
+    <input bind:value={ttsTags} placeholder="也可手动输入，多个标签直接拼接如(开心)[深呼吸]你好呀"
       class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground" />
   </div>
 
   <!-- Language -->
   <div class="space-y-1.5">
     <Label for="tts-lang">语言</Label>
-    <select id="tts-lang" bind:value={language} class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs">
+    <select id="tts-lang" bind:value={ttsLanguage} class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs">
       <option value="auto">自动检测</option>
       <option value="zh">中文</option>
       <option value="en">英文</option>
@@ -237,7 +263,7 @@ onMount(async () => {
   <!-- Target Text -->
   <div class="space-y-1.5">
     <Label for="tts-text">要合成的文字</Label>
-    <textarea id="tts-text" bind:value={targetText} rows={3}
+    <textarea id="tts-text" bind:value={ttsTargetText} rows={3}
       placeholder="输入要合成语音的文字内容"
       class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground resize-y scrollbar-hide"></textarea>
   </div>
