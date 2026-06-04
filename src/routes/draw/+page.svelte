@@ -1143,7 +1143,12 @@ async function startGeneration(mode = 'wai') {
                                 <div class="text-[10px] text-muted-foreground px-2 pb-2 leading-relaxed border-t border-border/50 pt-1.5" onclick={(e) => e.stopPropagation()}>
                                   {#if audioMeta[item.path]?.prompt}
                                     <div class="line-clamp-3">{audioMeta[item.path].prompt}</div>
-                                    <div class="flex gap-2 mt-1">
+                                    <div class="flex gap-2 mt-1 flex-wrap">
+                                      {#if audioMeta[item.path]?.workflow_path}
+                                        {@const ttsTypeLabels = { preset: '预设音色', design: '自定义音色', custom: '自定义音色', clone: '声音克隆' }}
+                                        {@const ttsType = (audioMeta[item.path].workflow_path || '').split('/').pop() || ''}
+                                        <span class="text-primary/60 font-medium">{ttsTypeLabels[ttsType] || ttsType}</span>
+                                      {/if}
                                       {#if audioMeta[item.path]?.speaker}<span class="text-primary/60">音色: {audioMeta[item.path].speaker}</span>{/if}
                                       {#if audioMeta[item.path]?.language}<span class="text-primary/60">语言: {audioMeta[item.path].language}</span>{/if}
                                     </div>
