@@ -86,7 +86,8 @@ let inputText = $state('');
 let sending = $state(false);
 let settingsOpen = $state(true);
 let errorText = $state('');
-let genEnabled = $state(true);
+let genEnabled = $state(typeof localStorage !== 'undefined' ? localStorage.getItem('saloon-gen') !== 'false' : true);
+$effect(() => { try { localStorage.setItem('saloon-gen', String(genEnabled)); } catch {} });
 
 let totalLlmCost = $state(0);
 let totalLlmTokens = $state(0);
