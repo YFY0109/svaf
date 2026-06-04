@@ -4,34 +4,19 @@ import { Button } from '$lib/components/ui/button';
 import { Label } from '$lib/components/ui/label';
 import { Alert, AlertDescription } from '$lib/components/ui/alert';
 import { forumAuth } from '$lib/forum/stores/auth';
-import { addToQueue, fetchMyQueue, getImageUrl, uploadTtsRefAudio } from '$lib/draw/api/client';
+import { getImageUrl, uploadTtsRefAudio, drawRequest } from '$lib/draw/api/client';
 import { Badge } from '$lib/components/ui/badge';
 import { onMount } from 'svelte';
-import TurnstileWidget from '$lib/components/TurnstileWidget.svelte';
-
 let {
   ttsPerChar = 0.01, ttsPerSec = 0.033, ttsMin = 1,
-  turnstileToken = $bindable(''),
-  turnstileTick = $bindable(0),
-  turnstileEnabled = false,
 }: {
   ttsPerChar?: number;
   ttsPerSec?: number;
   ttsMin?: number;
-  turnstileToken?: string;
-  turnstileTick?: number;
-  turnstileEnabled?: boolean;
 } = $props();
 
 type TtsMode = 'preset' | 'custom' | 'clone';
 let mode = $state<TtsMode>('preset');
-
-// Mode → workflow 映射
-const WF_MAP: Record<TtsMode, string> = {
-  preset: 'TTS/QwenTTS预设.json',
-  custom: 'TTS/QwenTTS自定义音色.json',
-  clone: 'TTS/QwenTTS声音克隆.json',
-};
 
 // Preset mode
 let speakers = $state<Array<{ id: string; description: string }>>([]);
@@ -39,7 +24,6 @@ let selectedSpeaker = $state('Vivian');
 
 // Clone & Custom mode
 let instruct = $state('');
-let refText = $state('');
 
 // Audio upload (clone only)
 let audioFile = $state<File | null>(null);
@@ -51,12 +35,6 @@ let language = $state('auto');
 let submitting = $state(false);
 let error = $state('');
 
-// Queue state
-let queueItemId = $state<number | null>(null);
-let queueStatus = $state('');
-let queuePosition = $state<number | null>(null);
-let queueError = $state('');
-let pollTimer: ReturnType<typeof setInterval> | null = null;
 let resultUrl = $state('');
 let done = $state(false);
 
@@ -73,35 +51,29 @@ function handleFileSelect(e: Event) {
 
 async function handleSubmit() {
   if (submitting || !targetText) return;
-
   error = '';
   submitting = true;
   try {
-    const payload: any = {
-      direct_prompt: targetText,
-      workflow_path: WF_MAP[mode],
-      language,
-      turnstile_token: turnstileToken || undefined,
-    };
-    if (mode === 'preset') {
-      payload.speaker = selectedSpeaker;
-      if (instruct) payload.instruct = instruct;
-    } else if (mode === 'custom') {
-      if (instruct) payload.instruct = instruct;
-    } else if (mode === 'clone') {
-      if (refText) payload.ref_text = refText;
-      if (audioFile) {
-        // 先上传参考音频
-        const uploadRes = await uploadTtsRefAudio(audioFile);
-        payload.ref_audio_name = uploadRes.filename;
-      }
+    let refName = undefined;
+    if (mode === 'clone' && audioFile) {
+      const uploadRes = await uploadTtsRefAudio(audioFile);
+      refName = uploadRes.filename;
     }
-    const res = await addToQueue(payload);
-    turnstileTick++;
-    queueItemId = res.item_id;
-    queueStatus = 'pending';
-    queuePosition = res.position;
-    pollTimer = setInterval(pollStatus, 2000);
+    const res = await drawRequest<{ ok: boolean; filename: string; cost: number }>('/api/draw/tts/synthesize', {
+      method: 'POST',
+      json: {
+        text: targetText,
+        mode: mode,
+        speaker: mode === 'preset' ? selectedSpeaker : undefined,
+        instruct: instruct || undefined,
+        ref_audio_name: refName,
+      },
+      requiresAuth: true,
+    });
+    if (res.ok && res.filename) {
+      resultUrl = getImageUrl(res.filename);
+      done = true;
+    }
   } catch (e: unknown) {
     error = e instanceof Error ? e.message : '提交失败';
   } finally {
@@ -109,37 +81,7 @@ async function handleSubmit() {
   }
 }
 
-async function pollStatus() {
-  if (!queueItemId) return;
-  try {
-    const q = await fetchMyQueue();
-    const item = q.items.find(i => i.id === queueItemId);
-    if (!item) {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-      return;
-    }
-    queueStatus = item.status;
-    queuePosition = item.position ?? null;
-    if (item.status === 'done') {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-      const files = (item as any)._output_files || [];
-      if (files.length > 0) {
-        resultUrl = getImageUrl(files[0]);
-      }
-      done = true;
-    } else if (item.status === 'failed') {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-      queueError = item.error || '生成失败';
-    }
-  } catch {}
-}
-
 function handleReset() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  queueItemId = null;
-  queueStatus = '';
-  queuePosition = null;
-  queueError = '';
   resultUrl = '';
   done = false;
   error = '';
@@ -162,16 +104,6 @@ onMount(async () => {
   if (speakers.length > 0) selectedSpeaker = speakers[0].id;
 });
 
-function statusLabel(s: string): string {
-  switch (s) {
-    case 'pending': return '排队中';
-    case 'waiting': return '等待中';
-    case 'running': return '转换中';
-    case 'done': return '完成';
-    case 'failed': return '失败';
-    default: return s;
-  }
-}
 </script>
 
 <div class="space-y-4">
@@ -248,21 +180,12 @@ function statusLabel(s: string): string {
       class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground resize-none"></textarea>
   </div>
 
-  {#if turnstileEnabled}
-    <TurnstileWidget
-      siteKey="0x4AAAAAADSVSh5jjelMNlrv"
-      tick={turnstileTick}
-      onToken={(t) => (turnstileToken = t)}
-      onExpired={() => (turnstileToken = '')}
-    />
-  {/if}
-
   <!-- Submit -->
   <Button onclick={handleSubmit}
     disabled={submitting || !targetText || done} class="w-full">
     <Icon icon="mdi:send" class="size-4 mr-1" />
-    {submitting ? '提交中...' : done ? '已完成' : '开始生成'}
-    {#if !done && !queueItemId && estimatedCost > 0}
+    {submitting ? '合成中...' : done ? '已完成' : '开始生成'}
+    {#if estimatedCost > 0}
       <Badge variant="secondary" class="ml-1.5 text-[10px] px-1">{costLabel}</Badge>
     {/if}
   </Button>
@@ -273,28 +196,6 @@ function statusLabel(s: string): string {
       <Icon icon="mdi:alert-circle" class="size-4" />
       <AlertDescription class="text-xs">{error}</AlertDescription>
     </Alert>
-  {/if}
-
-  <!-- Queue Status -->
-  {#if queueItemId && !done && !queueError}
-    <div class="flex items-center gap-2 text-xs border rounded-lg px-3 py-2">
-      <Icon icon="mdi:loading" class="size-4 animate-spin text-primary" />
-      <span class="flex-1">
-        {statusLabel(queueStatus)}
-        {#if queueStatus === 'pending' && queuePosition != null}
-          ，前面还有 {queuePosition - 1} 位
-        {/if}
-      </span>
-    </div>
-  {/if}
-
-  <!-- Failed -->
-  {#if queueError}
-    <Alert variant="destructive">
-      <Icon icon="mdi:alert-circle" class="size-4" />
-      <AlertDescription class="text-xs">{queueError}</AlertDescription>
-    </Alert>
-    <Button variant="outline" size="sm" onclick={handleReset} class="mt-2">重新开始</Button>
   {/if}
 
   <!-- Result -->
