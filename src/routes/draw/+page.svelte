@@ -219,32 +219,28 @@ let audioMeta = $state<Record<string, { prompt?: string; speaker?: string; langu
     resolveApiRedirect();
   });
 
-  // Tab state
-  let activeTab = $state(location.hash?.slice(1) || 'generate');
-  let genSubTab = $state(location.hash?.includes('img2img') ? 'img2img' : location.hash?.includes('saloon') ? 'saloon' : location.hash?.includes('tts') ? 'tts' : 'txt2img');
-  let genTxtSubTab = $state((typeof localStorage !== 'undefined' && localStorage.getItem('draw-txt-sub-tab')) || 'wai');
-  let imgSubTab = $state('flux2');
-  let selectedMode = $state((typeof localStorage !== 'undefined' && localStorage.getItem('draw-txt-sub-tab')) || 'wai');
+  // Tab state — 从 URL hash 恢复，格式: #tab/subtab/subsubtab
+  function parseHash(): { main: string; sub: string; subsub: string } {
+    const parts = (location.hash?.slice(1) || '').split('/');
+    return { main: parts[0] || 'generate', sub: parts[1] || '', subsub: parts[2] || '' };
+  }
+  const initialHash = parseHash();
+  let activeTab = $state(initialHash.main);
+  let genSubTab = $state(['img2img','txt2img','saloon','tts','video'].includes(initialHash.sub) ? initialHash.sub : 'txt2img');
+  let genTxtSubTab = $state(['wai','anima','ernie','real'].includes(initialHash.subsub) ? initialHash.subsub : 'wai');
+  let imgSubTab = $state(['flux2','qwen'].includes(initialHash.subsub) ? initialHash.subsub : 'flux2');
+  let selectedMode = $state(genTxtSubTab);
 
+  // tab/子tab 变化时更新 URL hash
   $effect(() => {
-    try { localStorage.setItem('draw-txt-sub-tab', genTxtSubTab); } catch {}
-  });
-
-  // 从 URL hash 恢复 tab 状态
-  $effect(() => {
-    if (typeof location !== 'undefined') {
-      const h = location.hash?.slice(1);
-      if (h === 'mine' || h === 'featured' || h === 'generate') activeTab = h;
-      if (h === 'img2img' || h === 'txt2img' || h === 'saloon' || h === 'tts') genSubTab = h;
+    if (typeof location === 'undefined') return;
+    const parts = [activeTab];
+    if (activeTab === 'generate') {
+      parts.push(genSubTab);
+      if (genSubTab === 'txt2img') parts.push(genTxtSubTab);
+      else if (genSubTab === 'img2img') parts.push(imgSubTab);
     }
-  });
-
-  // tab 变化时更新 URL hash
-  $effect(() => {
-    if (typeof location !== 'undefined' && activeTab) {
-      console.log('[FORK] activeTab effect:', activeTab);
-        history.replaceState(null, '', '#' + activeTab);
-    }
+    history.replaceState(null, '', '#' + parts.join('/'));
   });
 
   const state = $derived({ workflowPath, workflowName, styleTags, styleName, directPrompt, negativePrompt, nlPrompt, width, height, forkSeed, sameSeed });
