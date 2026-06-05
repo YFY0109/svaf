@@ -1127,7 +1127,7 @@ async function startGeneration(mode = 'wai') {
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <h3 class="text-sm font-medium flex items-center gap-1.5 shrink-0">
                 <div class="flex items-center gap-0.5 border rounded-lg overflow-hidden text-xs">
-                  <button class="px-2 py-1 transition-colors {imageCategory === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}" onclick={() => imageCategory = 'all'}>默认</button>
+                  <button class="px-2 py-1 transition-colors {imageCategory === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}" onclick={() => { imageCategory = 'all'; loadMyImages(); }}>默认</button>
                   <button class="px-2 py-1 transition-colors {imageCategory === 'saloon' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}" onclick={() => { imageCategory = 'saloon'; loadSaloonImages(); }}>酒馆</button>
                 </div>
                 <span class="text-xs text-muted-foreground whitespace-nowrap">({displayImages.length}/{displayTotal})</span>
