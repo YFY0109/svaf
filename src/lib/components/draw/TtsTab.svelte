@@ -7,6 +7,7 @@ import { forumAuth } from '$lib/forum/stores/auth';
 import { getImageUrl, uploadTtsRefAudio, drawRequest } from '$lib/draw/api/client';
 import { Badge } from '$lib/components/ui/badge';
 import { onMount } from 'svelte';
+import { autoResize } from '$lib/utils/actions';
 
 const TTS_STORAGE_KEY = 'tts-form';
 function loadTtsForm(): Record<string, any> {
@@ -159,19 +160,19 @@ onMount(async () => {
     </div>
     <div class="space-y-1.5">
       <Label for="tts-instruct">风格指令 <span class="text-muted-foreground text-[10px]">(可选)</span></Label>
-      <input id="tts-instruct" bind:value={ttsInstruct} placeholder="用轻快上扬的语调，语速稍快，声音明亮有活力"
-        class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground" />
+      <textarea id="tts-instruct" bind:value={ttsInstruct} use:autoResize placeholder="用轻快上扬的语调，语速稍快，声音明亮有活力"
+        class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground scrollbar-hide"></textarea>
       <div class="text-[10px] text-muted-foreground">支持在文本中嵌入标签：(开心)[语速加快][笑][叹气] 等</div>
     </div>
   {:else if ttsMode === 'custom'}
     <!-- Custom Voice Design -->
     <div class="space-y-1.5">
       <Label for="tts-instruct-custom">音色描述 <span class="text-muted-foreground text-[10px]">(可选，支持导演模式)</span></Label>
-      <textarea id="tts-instruct-custom" bind:value={ttsInstruct} rows={3}
+      <textarea id="tts-instruct-custom" bind:value={ttsInstruct} use:autoResize
         placeholder="【角色】五十多岁的中年男性，声音低沉浑厚
 【场景】深夜在书房给远方的儿子写信
 【指导】语速缓慢，带着慈爱与叮嘱，偶尔停顿思考"
-        class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground resize-y scrollbar-hide"></textarea>
+        class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground scrollbar-hide"></textarea>
       <details class="text-[10px] text-muted-foreground">
         <summary class="cursor-pointer hover:text-foreground">可用风格标签</summary>
         <div class="mt-1 space-y-0.5">
@@ -244,8 +245,8 @@ onMount(async () => {
         <button onclick={() => { ttsTags = ttsTags.includes(tag) ? ttsTags.replace('('+tag+')','').trim() : ttsTags + '('+tag+')' }} class="px-2 py-0.5 text-[10px] rounded-full border m-0.5 {ttsTags.includes(tag) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'} transition-colors">{tag}</button>
       {/each}
     </div>
-    <input bind:value={ttsTags} placeholder="也可手动输入，多个标签直接拼接如(开心)[深呼吸]你好呀"
-      class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground" />
+    <textarea bind:value={ttsTags} use:autoResize placeholder="也可手动输入，多个标签直接拼接如(开心)[深呼吸]你好呀"
+      class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground scrollbar-hide"></textarea>
   </div>
 
   <!-- Language -->
@@ -263,9 +264,9 @@ onMount(async () => {
   <!-- Target Text -->
   <div class="space-y-1.5">
     <Label for="tts-text">要合成的文字</Label>
-    <textarea id="tts-text" bind:value={ttsTargetText} rows={3}
+    <textarea id="tts-text" bind:value={ttsTargetText} use:autoResize
       placeholder="输入要合成语音的文字内容"
-      class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground resize-y scrollbar-hide"></textarea>
+      class="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground scrollbar-hide"></textarea>
   </div>
 
   <!-- Submit -->

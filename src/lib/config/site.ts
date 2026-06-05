@@ -64,12 +64,12 @@ export const siteConfig = {
     gallery: 'https://p.2x.nz',
     fileExplorer: 'https://e3.2x.nz/api/',
     nat: 'https://nat.2x.nz/api/analyze',
-    statsShare: 'https://u.2x.nz/share/CdkXbGgZr6ECKOyK',
+    statsShare: 'https://umami.2x.nz/share/CdkXbGgZr6ECKOyK',
     longDomain: 'https://iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.in',
     pageViews: 'https://t.2x.nz/batch'
   },
   analytics: {
-    umami: { src: 'https://u.2x.nz/script.js', websiteId: '5d710dbd-3a2e-43e3-a553-97b415090c63' },
+    umami: { src: 'https://umami.2x.nz/script.js', websiteId: '5d710dbd-3a2e-43e3-a553-97b415090c63' },
     cfWebAnalytics: { token: '15fe148e91b34f10a15652e1a74ab26c' },
     cfUmami: { src: 'https://t.2x.nz/tracker.js' },
     baidu: { id: 'a87028bb5a1ed77d98f192bc12b56142' },
@@ -109,7 +109,7 @@ export const siteConfig = {
     { label: 'NAT 检测', icon: 'mdi:lan-check', href: '/nat' },
     { label: '友链', icon: 'mdi:link-variant', href: '/friends' },
     { label: '赞助', icon: 'mdi:heart', href: '/sponsors' },
-    { label: '统计', icon: 'mdi:chart-line', href: 'https://u.2x.nz/share/CdkXbGgZr6ECKOyK' }
+    { label: '统计', icon: 'mdi:chart-line', href: 'https://umami.2x.nz/share/CdkXbGgZr6ECKOyK' }
   ] as const
 };
 

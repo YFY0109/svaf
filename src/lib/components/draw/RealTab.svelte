@@ -6,7 +6,8 @@
   import { Alert, AlertDescription } from '$lib/components/ui/alert';
   import { forumAuth } from '$lib/forum/stores/auth';
   import { drawEnv, apiError } from '$lib/draw/stores/env';
-  import TurnstileWidget from '$lib/components/TurnstileWidget.svelte';
+  import { autoResize } from '$lib/utils/actions';
+import TurnstileWidget from '$lib/components/TurnstileWidget.svelte';
   import { addToQueue } from '$lib/draw/api/client';
   import { get } from 'svelte/store';
 
@@ -144,9 +145,9 @@
       <Label class="text-xs text-muted-foreground">中文描述</Label>
       <textarea
         bind:value={cnPrompt}
+        use:autoResize
         placeholder="一个穿着西装的东方男性，电影级光影"
-        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
-        rows={2}
+        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring scrollbar-hide"
         disabled={submitting}
       ></textarea>
     </div>
@@ -162,9 +163,9 @@
       <Label class="text-xs text-muted-foreground">英文描述（最终使用的提示词）</Label>
       <textarea
         bind:value={enPrompt}
+        use:autoResize
         placeholder="a Chinese man in suit, cinematic lighting"
-        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
-        rows={3}
+        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring scrollbar-hide"
         disabled={submitting}
       ></textarea>
     </div>
